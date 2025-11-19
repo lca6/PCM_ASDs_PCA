@@ -1,26 +1,5 @@
 # Virtual venv
 venv/
-.env
 __pycache__/
-*.py[cod]
 *.egg-info/
-*.egg
-dist/
 build/
-.eggs/
-pip-wheel-metadata/
-pyphi.egg-info/
-
-# Editor / OS
-.vscode/
-.idea/
-*.swp
-.DS_Store
-
-# Testing / caches
-.pytest_cache/
-.coverage
-htmlcov/
-
-# Logs
-*.log
