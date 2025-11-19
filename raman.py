@@ -8,10 +8,7 @@ import ramanspy as rp
 import string
 
 
-# List of .txt files as dictionaries
-spectra_txt_files = []
-
-# then converted into pandas DataFrames for being read by pyphi
+# List of .txt files as pandas DataFrames
 spectra_dataframes = []
 
 # list of dictionaries
@@ -55,33 +52,28 @@ for r in rows:
         # Loads spectrum into pandas Dataframe for PCA
 
         with open(f'C:/Users/fsb22131/OneDrive - University of Strathclyde/pca/pyphi/spectra_data/{r}{c}_20251112_PCM_01.txt') as f:
-            
-            file = []
-            p = 0
+
+            # File is a list of dictionaries
+            file = [] 
             for line in f:
                 if line[0] != '#':
-                    p += 1
                     shift, intensity = line.split('\t', maxsplit=1)
-                    file.append(dict(point=p, shift=shift, intensity=intensity[:-1]))
+                    file.append(dict(sample=f'{r}{c}', shift=shift, intensity=intensity[:-1]))
+            
+            # File is a dataframe
+            file = pd.DataFrame(file).pivot(index='sample', columns='shift', values='intensity')
 
-            spectra_txt_files.append(file)       
+            spectra_dataframes.append(pd.DataFrame(file))
 
+dataset = pd.concat(spectra_dataframes)
 
-# Convert dictionaries (d) into pandas DataFrames (df)
-for d in spectra_txt_files:
-    df = pd.DataFrame(d)
-    spectra_dataframes.append(df)
-
-
-
-
-
+# With this dataset we can complete PCA
 
 
 
 
 # Visualising the spectra
-"""
+'''
 rp.plot.spectra(samples, label=indices, title='Raman spectra in separate graphs')
 
 rp.plot.show()
@@ -97,7 +89,7 @@ rp.plot.show()
 rp.plot.spectra(samples, label=indices, title='Raman spectra stacked on top of each other', plot_type='single stacked')
 
 rp.plot.show()
-"""
+'''
 
 
 
