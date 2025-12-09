@@ -50,20 +50,23 @@ for r in rows:
 
 
         # Loads spectrum into pandas Dataframe for PCA
-
         with open(f'C:/Users/fsb22131/OneDrive - University of Strathclyde/pca/pyphi/spectra_data/{r}{c}_20251112_PCM_01.txt') as f:
 
-            # File is a list of dictionaries
             file = [] 
             for line in f:
                 if line[0] != '#':
                     shift, intensity = line.split('\t', maxsplit=1)
                     file.append(dict(sample=f'{r}{c}', shift=shift, intensity=intensity[:-1]))
             
-            # File is a dataframe
-            file = pd.DataFrame(file).pivot(index='sample', columns='shift', values='intensity')
+            file = pd.DataFrame(file)
 
-            spectra_dataframes.append(pd.DataFrame(file))
+            # Convert data to floats
+            file['shift'] = file['shift'].astype(float)
+            file['intensity'] = file['intensity'].astype(float)
+            
+            file = file.pivot(index='sample', columns='shift', values='intensity')
+
+            spectra_dataframes.append(file)
 
 dataset = pd.concat(spectra_dataframes)
 
