@@ -60,7 +60,7 @@ for r in rows:
             
             file = pd.DataFrame(file)
 
-            # Convert data to floats
+            # Convert data to floats before pivoting
             file['shift'] = file['shift'].astype(float)
             file['intensity'] = file['intensity'].astype(float)
             
@@ -68,9 +68,13 @@ for r in rows:
 
             spectra_dataframes.append(file)
 
-dataset = pd.concat(spectra_dataframes)
+# Preprocessing
+
 
 # With this dataset we can complete PCA
+raman_spectra = pd.concat(spectra_dataframes)
+
+pcaobj = phi.pca(raman_spectra, 3)
 
 
 
