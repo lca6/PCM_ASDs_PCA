@@ -52,7 +52,7 @@ def load_spectra_singlewell():
             
             # Loads the Raman spectra for visualising the spectra
             try:
-                raman_object = rp.load.labspec(f'{onedrive_url}pca/pyphi/spectra_data/{r}{c}_20251112_PCM_01.txt')
+                raman_object = rp.load.labspec(f'{onedrive_url}spectra_data/{r}{c}_20251112_PCM_01.txt')
 
             except FileNotFoundError:
                 continue
@@ -70,7 +70,7 @@ def load_spectra_singlewell():
 
 
             # Loads spectrum into pandas Dataframe for PCA
-            with open(f'{onedrive_url}pca/pyphi/spectra_data/{r}{c}_20251112_PCM_01.txt') as f:
+            with open(f'{onedrive_url}spectra_data/{r}{c}_20251112_PCM_01.txt') as f:
 
                 file = [] 
                 for line in f:
@@ -141,7 +141,7 @@ def load_spectra_multiwell():
             
             # Loads the Raman spectra for visualising the spectra
             try:
-                raman_spectrum = parse_csv(f"{onedrive_url}pca/pyphi/spectra_data/csv/{r}{c:02d}.csv")
+                raman_spectrum = parse_csv(f"{onedrive_url}spectra_data/{r}{c:02d}.csv")
 
             except FileNotFoundError:
                 continue
