@@ -194,9 +194,6 @@ if pyomo_ok and ipopt_ok:
     ma57_ok = ma57_dummy_check()
 else:
     ma57_ok = False
-
-if not(pyomo_ok) or (not(ipopt_ok) and not(gams_ok)):
-    print('Will be using the NEOS server in the absence of IPOPT and GAMS')
     
 def clean_htmls():
     ''' Routine to clean html files
