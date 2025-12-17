@@ -2,6 +2,9 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 from pathlib import Path
 
+import pandas as pd
+import ramanspy as rp
+
 # =====================
 # Configuration
 # =====================
@@ -189,9 +192,24 @@ class RamanMultiwellGUI(tk.Tk):
             self.status.config(text="")
 
 # =====================
-# Launch
+# Launch GUI
 # =====================
 
 if __name__ == "__main__":
     app = RamanMultiwellGUI()
     app.mainloop()
+
+# =====================
+# Load spectra
+# =====================
+
+def parse_csv(csv_filename):
+    data = pd.read_csv(csv_filename, comment='#')
+
+    # parse and load data into spectral objects
+    spectral_data = data["Intensity"]
+    spectral_axis = data["RamanShift(cm-1)"]
+
+    raman_spectrum = rp.Spectrum(spectral_data, spectral_axis)
+
+    return raman_spectrum
