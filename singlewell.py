@@ -16,6 +16,12 @@ import pyphi_plots as pp
 import ramanspy as rp
 import string
 
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+onedrive_url = os.getenv("ONEDRIVE_URL")
 
 # List of .txt files as pandas DataFrames
 spectra_dataframes = []
@@ -41,7 +47,7 @@ for r in rows:
         
         # Loads the Raman spectra for visualising the spectra
         try:
-            raman_object = rp.load.labspec(f'C:/Users/fsb22131/OneDrive - University of Strathclyde/pca/pyphi/spectra_data/{r}{c}_20251112_PCM_01.txt')
+            raman_object = rp.load.labspec(f'{onedrive_url}pca/pyphi/spectra_data/{r}{c}_20251112_PCM_01.txt')
 
         except FileNotFoundError:
             continue
@@ -59,7 +65,7 @@ for r in rows:
 
 
         # Loads spectrum into pandas Dataframe for PCA
-        with open(f'C:/Users/fsb22131/OneDrive - University of Strathclyde/pca/pyphi/spectra_data/{r}{c}_20251112_PCM_01.txt') as f:
+        with open(f'{onedrive_url}pca/pyphi/spectra_data/{r}{c}_20251112_PCM_01.txt') as f:
 
             file = [] 
             for line in f:

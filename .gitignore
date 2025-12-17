@@ -1,5 +1,5 @@
-# Virtual venv
-venv/
 __pycache__/
 *.egg-info/
 build/
+spectra/
+.env

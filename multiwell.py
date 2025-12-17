@@ -16,6 +16,13 @@ import ramanspy as rp
 import string
 from parse import parse_csv
 
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+onedrive_url = os.getenv("ONEDRIVE_URL")
+
 # A-H
 rows = [x for x in string.ascii_uppercase[:8]]
 
@@ -33,7 +40,7 @@ for r in rows:
         
         # Loads the Raman spectra for visualising the spectra
         try:
-            raman_spectrum = parse_csv(f"C:/Users/fsb22131/OneDrive - University of Strathclyde/pca/pyphi/spectra_data/csv/{r}{c:02d}.csv")
+            raman_spectrum = parse_csv(f"{onedrive_url}pca/pyphi/spectra_data/csv/{r}{c:02d}.csv")
 
         except FileNotFoundError:
             continue

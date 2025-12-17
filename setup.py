@@ -29,6 +29,7 @@ setuptools.setup(
         "scipy",
         "spyder",
         "xlrd",
-        "ramanspy"
+        "ramanspy",
+        "python-dotenv"
     ],
 ) 
