@@ -9,15 +9,14 @@ import pandas as pd
 import numpy as np
 import pyphi as phi
 import pyphi_plots as pp
-
 import ramanspy as rp
+
 import string
+import sys
+import os
 
 from parse import parse_csv
-
 from dotenv import load_dotenv
-import os
-import sys
 
 load_dotenv()
 
