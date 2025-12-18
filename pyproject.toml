@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyphi"
+version = "4"
+dependencies = [
+        "bokeh",
+        "datetime",
+        "matplotlib",
+        "numpy",
+        "openpyxl",
+        "pandas",
+        "pyomo",
+        "scipy",
+        "spyder",
+        "xlrd",
+        "ramanspy",
+        "python-dotenv",
+]
+
+authors = [
+    {name = "Sal Garcia", email = "sgarciam@ic.ac.uk"}
+]
+
+maintainers = [
+    {name = "Luca Morelli", email = "luca.morelli.2022@uni.strath.ac.uk"}
+]
+
+description = "A Python toolbox for multivariate analysis using PCA and PLS methods"
+
+readme = "README.md"
+
+license = "MIT"
+
+license-files = ["LICENSE.txt"]
+
+classifiers = [
+        "Programming Language :: Python :: 3",
+        "Operating System :: OS Independent",
+]
+
+[project.urls]
+Documentation = "https://salvadorgarciamunoz.github.io/pyphi/index.html"
+Repository = "https://github.com/salvadorgarciamunoz/pyphi"
+
+[tool.setuptools]
+py-modules = ["pyphi","pyphi_plots","pyphi_batch"]
+
