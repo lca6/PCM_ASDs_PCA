@@ -15,7 +15,7 @@ import string
 import sys
 import os
 
-from parse import parse_csv
+from parse import load_spectrum
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -25,7 +25,7 @@ onedrive_url = os.getenv("ONEDRIVE_URL")
 
 
 # To run the singlewell function at the CLI, run the command "python analysis.py -s"
-def load_spectra_singlewell():
+def analyse_spectra_singlewell():
 
     # List of .txt files as pandas DataFrames
     spectra_dataframes = []
@@ -121,7 +121,7 @@ def load_spectra_singlewell():
 
 
 # To run the multiwell function at the CLI, run the command "python analysis.py -m"
-def load_spectra_multiwell():
+def analyse_spectra_multiwell():
 
     # A-H
     rows = [x for x in string.ascii_uppercase[:8]]
@@ -140,7 +140,7 @@ def load_spectra_multiwell():
             
             # Loads the Raman spectra for visualising the spectra
             try:
-                raman_spectrum = parse_csv(f"{onedrive_url}spectra_data/{r}{c:02d}.csv")
+                raman_spectrum = load_spectrum(f"{onedrive_url}spectra_data/{r}{c:02d}.csv")
 
             except FileNotFoundError:
                 continue
@@ -164,9 +164,9 @@ def main():
     if len(sys.argv) != 2:
         sys.exit(ERROR)
     elif sys.argv[1] == "-s":
-        load_spectra_singlewell()
+        analyse_spectra_singlewell()
     elif sys.argv[1] == "-m":
-        load_spectra_multiwell()
+        analyse_spectra_multiwell()
     else:
         sys.exit(ERROR)
 

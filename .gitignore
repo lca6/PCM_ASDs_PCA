@@ -1,6 +1,7 @@
 __pycache__/
 .vscode/
-spectra/
 .env
 build/
 pyphi.egg-info/
+spectra_data/output
+spectra_data/spectra

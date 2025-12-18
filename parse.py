@@ -203,7 +203,7 @@ if __name__ == "__main__":
 # Load spectra
 # =====================
 
-def parse_csv(csv_filename):
+def load_spectrum(csv_filename):
     data = pd.read_csv(csv_filename, comment='#')
 
     # parse and load data into spectral objects

@@ -13,12 +13,6 @@ The spectra can also be visualised.
 ## spectra_data/
 A folder containing .txt files obtained from the HORIBA LabRAM Odyssey confocal Raman microscope.
 
-## spectra_data/input_files
-A folder for all the .txt files that you want to be analysed.
-
-## spectra_data/output_files
-A folder for any files created after the input files are processed.
-
 ## pyphi.py | pyphi_batch.py | pyphi_plots.py
 Files courtesy of Sal Garcia's pyphi repository (available at https://github.com/salvadorgarciamunoz/pyphi) which allow us to conduct PCA on the spectral data.
 
