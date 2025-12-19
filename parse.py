@@ -9,6 +9,7 @@ import ramanspy as rp
 # Plate utilities
 # =====================
 
+
 def rowcol_to_well(row, col):
     """
     Plate convention:
@@ -19,9 +20,11 @@ def rowcol_to_well(row, col):
         raise ValueError(f"Row out of range: {row}")
     return f"{chr(64 + row)}{col}"
 
+
 # =====================
 # Core parsing logic
 # =====================
+
 
 def parse_plate_file(path):
     header = []
@@ -64,17 +67,17 @@ def parse_plate_file(path):
         intensities = list(map(float, parts[2:]))
 
         if len(intensities) != len(x_vals):
-            raise ValueError(
-                f"Length mismatch at file Col={file_col}, Row={file_row}"
-            )
+            raise ValueError(f"Length mismatch at file Col={file_col}, Row={file_row}")
 
         spectra.append((plate_row, plate_col, x_vals, intensities))
 
     return header, spectra
 
+
 # =====================
 # Output logic
 # =====================
+
 
 def write_csv(header, spectra, outdir):
     outdir.mkdir(parents=True, exist_ok=True)
@@ -93,9 +96,11 @@ def write_csv(header, spectra, outdir):
             for xi, yi in zip(x, y):
                 f.write(f"{xi:.6f},{yi:.6f}\n")
 
+
 # =====================
 # GUI
 # =====================
+
 
 class RamanMultiwellGUI(tk.Tk):
     def __init__(self):
@@ -123,9 +128,7 @@ class RamanMultiwellGUI(tk.Tk):
             row=0, column=2, **pad
         )
 
-        tk.Label(self, text="Output folder:").grid(
-            row=1, column=0, sticky="w", **pad
-        )
+        tk.Label(self, text="Output folder:").grid(row=1, column=0, sticky="w", **pad)
         tk.Entry(self, textvariable=self.output_dir, width=60).grid(
             row=1, column=1, **pad
         )
@@ -133,12 +136,9 @@ class RamanMultiwellGUI(tk.Tk):
             row=1, column=2, **pad
         )
 
-        tk.Button(
-            self,
-            text="Extract spectra",
-            width=20,
-            command=self.run
-        ).grid(row=2, column=1, pady=15)
+        tk.Button(self, text="Extract spectra", width=20, command=self.run).grid(
+            row=2, column=1, pady=15
+        )
 
         self.status = tk.Label(self, text="", fg="blue")
         self.status.grid(row=3, column=0, columnspan=3, pady=5)
@@ -146,7 +146,7 @@ class RamanMultiwellGUI(tk.Tk):
     def browse_input(self):
         file = filedialog.askopenfilename(
             title="Select Raman results file",
-            filetypes=[("Text files", "*.txt *.dat"), ("All files", "*.*")]
+            filetypes=[("Text files", "*.txt *.dat"), ("All files", "*.*")],
         )
         if file:
             self.input_file.set(file)
@@ -171,17 +171,15 @@ class RamanMultiwellGUI(tk.Tk):
             header, spectra = parse_plate_file(Path(self.input_file.get()))
             write_csv(header, spectra, Path(self.output_dir.get()))
 
-            self.status.config(
-                text=f"Done: {len(spectra)} spectra extracted."
-            )
+            self.status.config(text=f"Done: {len(spectra)} spectra extracted.")
             messagebox.showinfo(
-                "Complete",
-                f"Successfully extracted {len(spectra)} spectra."
+                "Complete", f"Successfully extracted {len(spectra)} spectra."
             )
 
         except Exception as e:
             messagebox.showerror("Error", str(e))
             self.status.config(text="")
+
 
 # =====================
 # Launch GUI
@@ -190,18 +188,3 @@ class RamanMultiwellGUI(tk.Tk):
 if __name__ == "__main__":
     app = RamanMultiwellGUI()
     app.mainloop()
-
-# =====================
-# Load spectra
-# =====================
-
-def load_spectrum(csv_filename):
-    data = pd.read_csv(csv_filename, comment='#')
-
-    # parse and load data into spectral objects
-    spectral_data = data["Intensity"]
-    spectral_axis = data["RamanShift(cm-1)"]
-
-    raman_spectrum = rp.Spectrum(spectral_data, spectral_axis)
-
-    return raman_spectrum

@@ -17,7 +17,6 @@ import os
 import pathlib
 import re
 
-from parse import load_spectrum
 from dotenv import load_dotenv
 from sample import Sample
 
@@ -25,7 +24,7 @@ load_dotenv()
 
 onedrive_url = os.getenv("ONEDRIVE_URL")
 
-PLATE_TO_ANALYSE: int = 2
+PLATE_TO_ANALYSE: int = 1
 
 
 # To run the singlewell function at the CLI, run the command "python analysis.py -s"
@@ -48,16 +47,18 @@ def analyse_spectra_singlewell():
                 else:
                     continue
 
-    samples = []
+    plate = []
     dataframes = []
     for file in files_to_be_processed:
 
         # Loads the Raman object for visualising the spectrum
         spectrum = rp.load.labspec(f"{onedrive_url}{file}")
 
-        sample = Sample(file, spectrum)
+        sample = Sample(spectrum)
 
-        samples.append(sample)
+        sample.extract_metadata(file)
+
+        plate.append(sample)
 
         # Loads spectra from chosen plate into pandas Dataframe for PCA
         if sample.plate == PLATE_TO_ANALYSE:
@@ -89,9 +90,7 @@ def analyse_spectra_singlewell():
     # ============
     # Preprocessing
     # =============
-
-
-
+    # TODO
 
     # ============================
     # Principle Component Analysis
@@ -103,12 +102,6 @@ def analyse_spectra_singlewell():
 
     pcaobj = phi.pca(spectral_data, 3)
 
-
-
-
-
-
-
     # =======================
     # Visualising the spectra
     # ========================
@@ -116,10 +109,9 @@ def analyse_spectra_singlewell():
     # Choose spectra we want to visualise
     spectra_to_visualise = []
     spectra_labels = []
+    for sample in plate:
 
-    for sample in samples:
-
-        # View spectra a chosen plate
+        # View spectra of chosen plate
         if sample.plate == PLATE_TO_ANALYSE:
             spectra_to_visualise.append(sample.spectrum)
             spectra_labels.append(sample.position)
@@ -149,32 +141,106 @@ def analyse_spectra_multiwell():
     # 1-12
     columns = [x for x in range(1, 13)]
 
-    # list of raman spectra
-    samples = []
-
-    # e.g. A2, B7, C9
-    indices = []
-
+    plate = []
+    dataframes = []
     for r in rows:
         for c in columns:
 
+            file = f"{r}{c}.csv"
+
             # Loads the Raman spectra for visualising the spectra
-            try:
-                raman_spectrum = load_spectrum(
-                    f"{onedrive_url}spectra_data/csv/{r}{c}.csv"
-                )
+            spectrum = load_spectrum_from_csv(f"{onedrive_url}spectra_data/csv/{file}")
 
-            except FileNotFoundError:
-                continue
+            sample = Sample(spectrum)
 
-            samples.append(raman_spectrum)
+            sample.extract_metadata(file)
 
-            indices.append(f"{r}{c}")
+            plate.append(sample)
 
+            with open(f"{onedrive_url}spectra_data/csv/{file}") as f:
+
+                file = []
+                for line in f:
+                    if line[0] != "#":
+                        if line == "RamanShift(cm-1),Intensity\n":
+                            continue
+                        shift, intensity = line.split(",", maxsplit=1)
+                        file.append(
+                            dict(
+                                sample=sample.position,
+                                shift=shift,
+                                intensity=intensity[:-1],
+                            )
+                        )
+
+                file = pd.DataFrame(file)
+
+                # Convert data to floats before pivoting
+                file["shift"] = file["shift"].astype(float)
+                file["intensity"] = file["intensity"].astype(float)
+
+                file = file.pivot(index="sample", columns="shift", values="intensity")
+
+                dataframes.append(file)
+
+    # ============
+    # Preprocessing
+    # =============
+    # TODO
+
+    # ============================
+    # Principle Component Analysis
+    # ============================
+
+    spectral_data = pd.concat(dataframes)
+
+    print(spectral_data)
+
+    pcaobj = phi.pca(spectral_data, 3)
+
+    # =======================
     # Visualising the spectra
-    rp.plot.spectra(samples, label=None, title="Raman spectra", plot_type="single")
+    # ========================
+
+    # Choose spectra we want to visualise
+    spectra_to_visualise = []
+    spectra_labels = []
+    for sample in plate:
+
+        spectra_to_visualise.append(sample.spectrum)
+        spectra_labels.append(sample.position)
+        plate_num = sample.plate
+        conc = sample.concentration
+
+    spectra_labels.sort(
+        key=lambda x: (re.findall(r"\D+", x)[0], int(re.findall(r"\d+", x)[0]))
+    )
+
+    rp.plot.spectra(
+        spectra_to_visualise,
+        label=spectra_labels,
+        plot_type="single",
+        title=f"Plate #{plate_num} Concentration {conc} mg/mL",
+    )
 
     rp.plot.show()
+
+
+# ===========================
+# Load spectra from csv files
+# ===========================
+
+
+def load_spectrum_from_csv(csv_filename):
+    data = pd.read_csv(csv_filename, comment="#")
+
+    # parse and load data into spectral objects
+    spectral_data = data["Intensity"]
+    spectral_axis = data["RamanShift(cm-1)"]
+
+    spectrum = rp.Spectrum(spectral_data, spectral_axis)
+
+    return spectrum
 
 
 def main():
