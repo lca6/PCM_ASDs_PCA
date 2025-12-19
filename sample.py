@@ -1,8 +1,3 @@
-
-
-
-
-
 class Sample:
     def __init__(sample, filename: str, spectrum):
         f = filename.removeprefix("spectra_data\\").removesuffix(".txt").split("_")
@@ -23,17 +18,9 @@ class Sample:
                 c = part.removesuffix("mgml")
                 c = int(c)
                 sample.concentration = c
-        
+
         # from rp.load.labspec
         sample.spectrum = spectrum
-    
+
     def __str__(sample):
         return f"Sample {sample.position} on plate #{sample.plate} at concentration {sample.concentration} mg/mL"
-
-
-
-
-class Plate:
-    pass
-
-
