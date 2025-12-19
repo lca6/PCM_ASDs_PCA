@@ -6,12 +6,6 @@ import pandas as pd
 import ramanspy as rp
 
 # =====================
-# Configuration
-# =====================
-
-USE_WELL_LABELS = True  # A01, B02, etc.
-
-# =====================
 # Plate utilities
 # =====================
 
@@ -23,7 +17,7 @@ def rowcol_to_well(row, col):
     """
     if not (1 <= row <= 26):
         raise ValueError(f"Row out of range: {row}")
-    return f"{chr(64 + row)}{col:02d}"
+    return f"{chr(64 + row)}{col}"
 
 # =====================
 # Core parsing logic
@@ -86,10 +80,8 @@ def write_csv(header, spectra, outdir):
     outdir.mkdir(parents=True, exist_ok=True)
 
     for row, col, x, y in spectra:
-        if USE_WELL_LABELS:
-            name = rowcol_to_well(row, col)
-        else:
-            name = f"R{row:02d}_C{col:02d}"
+
+        name = rowcol_to_well(row, col)
 
         out = outdir / f"{name}.csv"
 

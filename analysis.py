@@ -14,14 +14,15 @@ import ramanspy as rp
 import string
 import sys
 import os
+import pathlib
 
 from parse import load_spectrum
 from dotenv import load_dotenv
+from plate import Sample, Plate
 
 load_dotenv()
 
 onedrive_url = os.getenv("ONEDRIVE_URL")
-
 
 
 # To run the singlewell function at the CLI, run the command "python analysis.py -s"
@@ -31,64 +32,76 @@ def analyse_spectra_singlewell():
     spectra_dataframes = []
 
     # list of dictionaries
-    # each entry consists of a raman_object and its index (e.g. A2)
+    # each entry consists of a spectrum and its index (e.g. A2)
     plate = []
 
-    # list of raman_objects
+    # list of spectra
+    # this is plotted using ramanspy
     samples = []
 
     # e.g. A2, B7, C9
+    # this is for labelling my plots
     indices = []
 
-    # A-H
-    rows = [x for x in string.ascii_uppercase[:8]]
 
-    # 1-12
-    columns = [x for x in range(1, 13)]
-
-    for r in rows:
-        for c in columns:
-            
-            # Loads the Raman spectra for visualising the spectra
-            try:
-                raman_object = rp.load.labspec(f'{onedrive_url}spectra_data/{r}{c}_20251112_PCM_01.txt')
-
-            except FileNotFoundError:
-                continue
-
-            samples.append(raman_object)
-
-            indices.append(f'{r}{c}')
-
-            sample = {
-                "raman_object": raman_object,
-                "index": f"{r}{c}"
-            }
-
-            plate.append(sample)
+    path = pathlib.Path("spectra_data")
+    path = [x for x in path.iterdir() if x.is_file()]
 
 
-            # Loads spectrum into pandas Dataframe for PCA
-            with open(f'{onedrive_url}spectra_data/{r}{c}_20251112_PCM_01.txt') as f:
+    # Remove multiwell files and reference files from analysis
+    valid_files = []
+    for p in path:
+        p = str(p)
+        try:
+            p.index("multiwell")
+        except ValueError:
 
-                file = [] 
-                for line in f:
-                    if line[0] != '#':
-                        shift, intensity = line.split('\t', maxsplit=1)
-                        file.append(dict(sample=f'{r}{c}', shift=shift, intensity=intensity[:-1]))
-                
-                file = pd.DataFrame(file)
+            for _ in p:
+                if _.isupper():
+                    valid_files.append(p)
+                else:
+                    continue
 
-                # Convert data to floats before pivoting
-                file['shift'] = file['shift'].astype(float)
-                file['intensity'] = file['intensity'].astype(float)
-                
-                file = file.pivot(index='sample', columns='shift', values='intensity')
 
-                spectra_dataframes.append(file)
+    for file in valid_files:
+
+        # Loads the Raman object for visualising the spectrum
+        spectrum = rp.load.labspec(
+            f"{onedrive_url}{file}"
+        )
+        samples.append(spectrum)
+
+        sample = Sample(file, spectrum)
+
+        indices.append(sample.position)
+
+
+        # Loads spectrum into pandas Dataframe for PCA
+        with open(f"{onedrive_url}{file}") as f:
+
+            file = []
+            for line in f:
+                if line[0] != "#":
+                    shift, intensity = line.split("\t", maxsplit=1)
+                    file.append(
+                        dict(
+                            sample=sample.position, shift=shift, intensity=intensity[:-1]
+                        )
+                    )
+
+            file = pd.DataFrame(file)
+
+            # Convert data to floats before pivoting
+            file["shift"] = file["shift"].astype(float)
+            file["intensity"] = file["intensity"].astype(float)
+
+            file = file.pivot(index="sample", columns="shift", values="intensity")
+
+            spectra_dataframes.append(file)
+
+
 
     # Preprocessing
-
 
     # With this dataset we can complete PCA
     raman_spectra = pd.concat(spectra_dataframes)
@@ -96,24 +109,45 @@ def analyse_spectra_singlewell():
     pcaobj = phi.pca(raman_spectra, 3)
 
 
-
-
     # Visualising the spectra
-    rp.plot.spectra(samples, label=indices, title='Raman spectra in separate graphs')
+    rp.plot.spectra(samples, label=indices, title="Raman spectra in separate graphs")
 
     rp.plot.show()
 
-    rp.plot.spectra(samples, label=indices, title='Raman spectra overlaid on one graph', plot_type='single')
+    rp.plot.spectra(
+        samples,
+        label=indices,
+        title="Raman spectra overlaid on one graph",
+        plot_type="single",
+    )
 
     rp.plot.show()
 
-    rp.plot.spectra(samples, label=indices, title='Raman spectra stacked on top of each other', plot_type='stacked')
+    rp.plot.spectra(
+        samples,
+        label=indices,
+        title="Raman spectra stacked on top of each other",
+        plot_type="stacked",
+    )
 
     rp.plot.show()
 
-    rp.plot.spectra(samples, label=indices, title='Raman spectra stacked on top of each other', plot_type='single stacked')
+    rp.plot.spectra(
+        samples,
+        label=indices,
+        title="Raman spectra stacked on top of each other",
+        plot_type="single stacked",
+    )
 
     rp.plot.show()
+
+
+
+
+
+
+
+
 
 
 
@@ -137,24 +171,24 @@ def analyse_spectra_multiwell():
 
     for r in rows:
         for c in columns:
-            
+
             # Loads the Raman spectra for visualising the spectra
             try:
-                raman_spectrum = load_spectrum(f"{onedrive_url}spectra_data/{r}{c:02d}.csv")
+                raman_spectrum = load_spectrum(
+                    f"{onedrive_url}spectra_data/csv/{r}{c}.csv"
+                )
 
             except FileNotFoundError:
                 continue
 
             samples.append(raman_spectrum)
 
-            indices.append(f'{r}{c}')
+            indices.append(f"{r}{c}")
 
     # Visualising the spectra
     rp.plot.spectra(samples, label=None, title="Raman spectra", plot_type="single")
 
     rp.plot.show()
-
-
 
 
 def main():
@@ -169,6 +203,7 @@ def main():
         analyse_spectra_multiwell()
     else:
         sys.exit(ERROR)
+
 
 if __name__ == "__main__":
     main()
