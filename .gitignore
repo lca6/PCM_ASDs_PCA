@@ -3,6 +3,4 @@ __pycache__/
 .env
 build/
 pyphi.egg-info/
-spectra_data/output
-spectra_data/spectra
-spectra_data/csv
+to_be_processed/

@@ -18,4 +18,5 @@ Files courtesy of Sal Garcia's pyphi repository (available at https://github.com
 
 ## Usage
 1) Download this repository via ```git clone```
-2) Install the raman, pyphi, pyphi_plots and pyphi_batch modules by opening a terminal window, navigating to the root of this repository, and typing ```pip install .```
+2) Activate a conda environment (download Miniconda at https://www.anaconda.com/docs/getting-started/miniconda/main)
+3) Type ```pip install .```
