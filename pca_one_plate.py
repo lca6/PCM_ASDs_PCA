@@ -1,7 +1,5 @@
 import pandas as pd
 import numpy as np
-import pyphi as phi
-import pyphi_plots as pp
 import ramanspy as rp
 
 import dotenv
@@ -10,6 +8,9 @@ import os
 import pathlib
 
 from sample import Sample
+from pyphi import pyphi as phi
+from pyphi import pyphi_plots as pp
+from pyphi import pyphi_batch as pb
 
 dotenv.load_dotenv()
 

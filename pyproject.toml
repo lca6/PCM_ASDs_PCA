@@ -3,21 +3,20 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pyphi"
-version = "4"
+name = "PCM_ASDs_PCA"
+version = "1"
 dependencies = [
         "bokeh",
-        "datetime",
         "matplotlib",
         "numpy",
         "openpyxl",
         "pandas",
         "pyomo",
+        "python-dotenv",
+        "ramanspy",
         "scipy",
         "spyder",
         "xlrd",
-        "ramanspy",
-        "python-dotenv",
 ]
 
 authors = [
@@ -28,12 +27,9 @@ maintainers = [
     {name = "Luca Morelli", email = "luca.morelli.2022@uni.strath.ac.uk"}
 ]
 
-description = "A Python toolbox for multivariate analysis using PCA and PLS methods"
-
+description = "Principle Component Analysis on Raman spectra of Paracetamol Amorphous Solid Dispersions"
 readme = "README.md"
-
 license = "MIT"
-
 license-files = ["LICENSE.txt"]
 
 classifiers = [
@@ -42,9 +38,11 @@ classifiers = [
 ]
 
 [project.urls]
-Documentation = "https://salvadorgarciamunoz.github.io/pyphi/index.html"
-Repository = "https://github.com/salvadorgarciamunoz/pyphi"
+Original_repository = "https://github.com/salvadorgarciamunoz/pyphi"
+Original_repository_documentation = "https://salvadorgarciamunoz.github.io/pyphi/index.html"
+Repository = "https://github.com/lca6/PCM_ASDs_PCA"
+
 
 [tool.setuptools]
-py-modules = ["pyphi","pyphi_plots","pyphi_batch"]
+packages = ["pyphi"]
 
