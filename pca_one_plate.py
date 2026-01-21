@@ -4,18 +4,19 @@ import pyphi as phi
 import pyphi_plots as pp
 import ramanspy as rp
 
+import dotenv
 import sys
 import os
 import pathlib
 
-from dotenv import load_dotenv
 from sample import Sample
 
-load_dotenv()
+dotenv.load_dotenv()
 
 macbook_url = os.getenv("MACBOOK_URL")
+processing_folder = os.getenv("PROCESSING_FOLDER")
 
-files_to_be_processed = pathlib.Path("to_be_processed")
+files_to_be_processed = pathlib.Path(processing_folder)
 files_to_be_processed = [str(x) for x in files_to_be_processed.iterdir()]
 
 plate = []
@@ -31,9 +32,9 @@ for file in files_to_be_processed:
 
     spectrum = rp.load.labspec(f"{macbook_url}{file}")
 
-    sample = Sample(spectrum)
+    sample = Sample()
 
-    sample.extract_metadata(file)
+    sample.get_sample_metadata(file, spectrum)
 
     plate.append(sample)
 
@@ -46,7 +47,7 @@ for file in files_to_be_processed:
                 shift, intensity = line.split("\t", maxsplit=1)
                 file.append(
                     dict(
-                        sample=sample.position,
+                        sample=sample.well,
                         shift=shift,
                         intensity=intensity[:-1],
                     )

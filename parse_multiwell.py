@@ -1,18 +1,17 @@
+import dotenv
 import os
 import pathlib
 import sys
 
-from dotenv import load_dotenv
-
-load_dotenv()
+dotenv.load_dotenv()
 
 macbook_url = os.getenv("MACBOOK_URL")
-
+processing_folder = os.getenv("PROCESSING_FOLDER")
 
 
 def main():
 
-    file = pathlib.Path("to_be_processed")
+    file = pathlib.Path(processing_folder)
     file = [str(x) for x in file.iterdir()]
 
     if len(file) > 1:
@@ -24,7 +23,7 @@ def main():
     if len(file) == 1:
         file = file[0]
 
-    plate_info = file.removeprefix("to_be_processed/").removesuffix("_multiwell.txt")
+    plate_info = file.removeprefix(f"{processing_folder}/").removesuffix("_multiwell.txt")
     
     plate_num, plate_conc = plate_info.split("_")
 
@@ -50,7 +49,7 @@ def main():
     with open(file, "w", encoding="utf-8") as f:
         f.write(text)
 
-    output_dir = f"{macbook_url}to_be_processed/"
+    output_dir = f"{macbook_url}{processing_folder}/"
 
 
     header, spectra = parse_multiwell_file(pathlib.Path(file))
@@ -127,9 +126,9 @@ def write_txt(header, spectra, outdir, plate_number, plate_concentration):
 
     for row, col, x, y in spectra:
 
-        position = rowcol_to_well(row, col)
+        well = rowcol_to_well(row, col)
 
-        out = outdir / f"plate{plate_number}_{plate_concentration}mgml_{position}.txt"
+        out = outdir / f"plate{plate_number}_{plate_concentration}mgml_{well}.txt"
 
         with open(out, "w", encoding="utf-8", newline="\n") as f:
             for xi, yi in zip(x, y):

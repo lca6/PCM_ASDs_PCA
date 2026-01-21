@@ -1,23 +1,23 @@
 import ramanspy as rp
 
+import dotenv
 import sys
 import os
 import pathlib
 import re
 
-from dotenv import load_dotenv
 from sample import Sample
 
-load_dotenv()
+dotenv.load_dotenv()
 
 macbook_url = os.getenv("MACBOOK_URL")
-
+processing_folder = os.getenv("PROCESSING_FOLDER")
 
 # =======================
 # Visualising the spectra
 # ========================
 
-files_to_be_processed = pathlib.Path("to_be_processed")
+files_to_be_processed = pathlib.Path(processing_folder)
 files_to_be_processed = [str(x) for x in files_to_be_processed.iterdir()]
 
 plate = []
@@ -36,15 +36,15 @@ for file in files_to_be_processed:
         # Loads the Raman object for visualising the spectrum
         spectrum = rp.load.labspec(f"{macbook_url}{file}")
 
-        sample = Sample(spectrum)
+        sample = Sample()
 
-        sample.extract_metadata(file)
+        sample.get_sample_metadata(file, spectrum)
 
         plate.append(sample)
 
         spectra_to_visualise.append(sample.spectrum)
 
-        spectra_labels.append(sample.position)
+        spectra_labels.append(sample.well)
 
 
 
