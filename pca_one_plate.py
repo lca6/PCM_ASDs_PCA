@@ -2,20 +2,15 @@ import pandas as pd
 import numpy as np
 import ramanspy as rp
 
-import dotenv
 import sys
-import os
 import pathlib
 
+from filter import rows_to_remove, cols_to_remove, macbook_url, processing_folder
 from sample import Sample
 from pyphi import pyphi as phi
 from pyphi import pyphi_plots as pp
 from pyphi import pyphi_batch as pb
 
-dotenv.load_dotenv()
-
-macbook_url = os.getenv("MACBOOK_URL")
-processing_folder = os.getenv("PROCESSING_FOLDER")
 
 files_to_be_processed = pathlib.Path(processing_folder)
 files_to_be_processed = [str(x) for x in files_to_be_processed.iterdir()]
@@ -39,30 +34,36 @@ for file in files_to_be_processed:
 
     plate.append(sample)
 
+    # Filter samples to be included in PCA
+    if sample.row in rows_to_remove:
+        continue
+    elif sample.col in cols_to_remove:
+        continue
+    
+    else:
+        with open(f"{macbook_url}{file}") as f:
 
-    with open(f"{macbook_url}{file}") as f:
-
-        file = []
-        for line in f:
-            if line[0] != "#":
-                shift, intensity = line.split("\t", maxsplit=1)
-                file.append(
-                    dict(
-                        sample=sample.well,
-                        shift=shift,
-                        intensity=intensity[:-1],
+            file = []
+            for line in f:
+                if line[0] != "#":
+                    shift, intensity = line.split("\t", maxsplit=1)
+                    file.append(
+                        dict(
+                            sample=sample.well,
+                            shift=shift,
+                            intensity=intensity[:-1],
+                        )
                     )
-                )
 
-        file = pd.DataFrame(file)
+            file = pd.DataFrame(file)
 
-        # Convert data to floats before pivoting
-        file["shift"] = file["shift"].astype(float)
-        file["intensity"] = file["intensity"].astype(float)
+            # Convert data to floats before pivoting
+            file["shift"] = file["shift"].astype(float)
+            file["intensity"] = file["intensity"].astype(float)
 
-        file = file.pivot(index="sample", columns="shift", values="intensity")
+            file = file.pivot(index="sample", columns="shift", values="intensity")
 
-        dataframes.append(file)
+            dataframes.append(file)
 
 
 

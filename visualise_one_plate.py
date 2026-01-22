@@ -1,17 +1,12 @@
 import ramanspy as rp
 
-import dotenv
 import sys
-import os
 import pathlib
 import re
 
+from filter import rows_to_remove, cols_to_remove, macbook_url, processing_folder
 from sample import Sample
 
-dotenv.load_dotenv()
-
-macbook_url = os.getenv("MACBOOK_URL")
-processing_folder = os.getenv("PROCESSING_FOLDER")
 
 # =======================
 # Visualising the spectra
@@ -42,18 +37,23 @@ for file in files_to_be_processed:
 
         plate.append(sample)
 
-        spectra_to_visualise.append(sample.spectrum)
-
-        spectra_labels.append(sample.well)
+        # Filter spectra to be visualised
+        if sample.row in rows_to_remove:
+            continue
+        elif sample.col in cols_to_remove:
+            continue
+        else:
+            spectra_to_visualise.append(sample.spectrum)
+            spectra_labels.append(sample.well)
 
 
 
 # Confirm all samples are from one plate
-plate_num = []
+plate_nums = []
 for sample in plate:
-    plate_num.append(sample.plate)
+    plate_nums.append(sample.plate)
 
-    for n in plate_num:
+    for n in plate_nums:
         if sample.plate != n:
             sys.exit("Make sure all samples are from one plate")
 

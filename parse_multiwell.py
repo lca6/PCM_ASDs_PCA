@@ -1,12 +1,7 @@
-import dotenv
-import os
 import pathlib
 import sys
 
-dotenv.load_dotenv()
-
-macbook_url = os.getenv("MACBOOK_URL")
-processing_folder = os.getenv("PROCESSING_FOLDER")
+from filter import macbook_url, processing_folder
 
 
 def main():
