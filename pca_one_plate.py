@@ -5,7 +5,13 @@ import ramanspy as rp
 import sys
 import pathlib
 
-from filter import rows_to_remove, cols_to_remove, macbook_url, processing_folder, wavenumber_range
+from filter import (
+    rows_to_remove,
+    cols_to_remove,
+    macbook_url,
+    processing_folder,
+    wavenumber_range,
+)
 from sample import Sample
 from pyphi import pyphi as phi
 from pyphi import pyphi_plots as pp
@@ -43,8 +49,6 @@ for file in files_to_be_processed:
         continue
     elif sample.col in cols_to_remove:
         continue
-    
-
 
     with open(f"{macbook_url}{file}") as f:
 
@@ -57,7 +61,7 @@ for file in files_to_be_processed:
                 intensity = float(intensity[:-1])
 
                 # Crop dataframe according to wavenumber_range
-                if wavenumber_range[0] is not None:   
+                if wavenumber_range[0] is not None:
                     if shift < wavenumber_range[0]:
                         continue
 
@@ -97,7 +101,6 @@ for sample in plate:
             sys.exit("Make sure all samples are from one plate")
 
 
-
 # ============================
 # Principle Component Analysis
 # ============================
@@ -112,4 +115,4 @@ pcaobj = phi.pca(spectral_data, 3)
 # Plotting scores and loadings of each Principle Component
 # ========================================================
 
-pp.score_scatter(pcaobj, [1,2], addtitle=f"Plate #{plate[0].plate}")
+pp.score_scatter(pcaobj, [1, 2], addtitle=f"Plate #{plate[0].plate}")

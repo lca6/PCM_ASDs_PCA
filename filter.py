@@ -29,21 +29,18 @@ def sort_files(files_to_be_sorted):
     pattern = re.compile(r"_([A-H])(\d+)(?:_|\.txt)")
 
     sorted_files = sorted(
-                files_to_be_sorted,
-                key=lambda x: (pattern.search(x).group(1), int(pattern.search(x).group(2)))
+        files_to_be_sorted,
+        key=lambda x: (pattern.search(x).group(1), int(pattern.search(x).group(2))),
     )
-    
+
     sample_labels = list(
         map(
-                lambda x: f"{x.group(1)}{x.group(2)}",
-                filter(None, (pattern.search(f) for f in files_to_be_sorted))
+            lambda x: f"{x.group(1)}{x.group(2)}",
+            filter(None, (pattern.search(f) for f in files_to_be_sorted)),
         )
     )
 
-    sorted_sample_labels = sorted(
-        sample_labels,
-        key=lambda x: (x[0], int(x[1:]))
-    )
+    sorted_sample_labels = sorted(sample_labels, key=lambda x: (x[0], int(x[1:])))
 
     if glass_reference == True:
         sorted_files.append("to_be_processed/glass_reference.txt")

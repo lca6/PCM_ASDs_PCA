@@ -18,8 +18,10 @@ def main():
     if len(file) == 1:
         file = file[0]
 
-    plate_info = file.removeprefix(f"{processing_folder}/").removesuffix("_multiwell.txt")
-    
+    plate_info = file.removeprefix(f"{processing_folder}/").removesuffix(
+        "_multiwell.txt"
+    )
+
     plate_num, plate_conc = plate_info.split("_")
 
     plate_num = plate_num.removeprefix("plate")
@@ -29,14 +31,12 @@ def main():
     except TypeError:
         sys.exit("Plate number not found")
 
-
     plate_conc = plate_conc.removesuffix("mgml")
 
     try:
         int(plate_conc)
     except TypeError:
-        sys.exit("Plate concentration not found")       
-
+        sys.exit("Plate concentration not found")
 
     with open(file, encoding="latin-1") as f:
         text = f.read()
@@ -46,16 +46,11 @@ def main():
 
     output_dir = f"{macbook_url}{processing_folder}/"
 
-
     header, spectra = parse_multiwell_file(pathlib.Path(file))
     write_txt(header, spectra, pathlib.Path(output_dir), plate_num, plate_conc)
 
-
     # Remove multiwell file once parsed
     pathlib.Path(file).unlink()
-
-
-
 
 
 # =====================
@@ -130,7 +125,6 @@ def write_txt(header, spectra, outdir, plate_number, plate_concentration):
                 f.write(f"{xi:.6f}\t{yi:.6f}\n")
 
 
-
 # =====================
 # Plate utilities
 # =====================
@@ -145,8 +139,6 @@ def rowcol_to_well(row, col):
     if not (1 <= row <= 26):
         raise ValueError(f"Row out of range: {row}")
     return f"{chr(64 + row)}{col}"
-
-
 
 
 if __name__ == "__main__":

@@ -4,7 +4,14 @@ import sys
 import pathlib
 import re
 
-from filter import rows_to_remove, cols_to_remove, macbook_url, processing_folder, wavenumber_range, sort_files
+from filter import (
+    rows_to_remove,
+    cols_to_remove,
+    macbook_url,
+    processing_folder,
+    wavenumber_range,
+    sort_files,
+)
 from sample import Sample
 
 
@@ -28,36 +35,36 @@ spectra_to_visualise = []
 
 for file in files_to_be_processed:
 
-        with open(file, encoding="latin-1") as f:
-            text = f.read()
+    with open(file, encoding="latin-1") as f:
+        text = f.read()
 
-        with open(file, "w", encoding="utf-8") as f:
-            f.write(text)
+    with open(file, "w", encoding="utf-8") as f:
+        f.write(text)
 
-        # Loads the Raman object for visualising the spectrum
-        spectrum = rp.load.labspec(f"{macbook_url}{file}")
+    # Loads the Raman object for visualising the spectrum
+    spectrum = rp.load.labspec(f"{macbook_url}{file}")
 
-        sample = Sample()
+    sample = Sample()
 
-        sample.get_sample_metadata(file, spectrum)
+    sample.get_sample_metadata(file, spectrum)
 
-        plate.append(sample)
+    plate.append(sample)
 
-        # Filter spectra to be visualised
-        if sample.row in rows_to_remove:
-            continue
-        elif sample.col in cols_to_remove:
-            continue
+    # Filter spectra to be visualised
+    if sample.row in rows_to_remove:
+        continue
+    elif sample.col in cols_to_remove:
+        continue
 
-        # =============
-        # Preprocessing
-        # =============
+    # =============
+    # Preprocessing
+    # =============
 
-        # Crop spectra
-        cropper = rp.preprocessing.misc.Cropper(region=wavenumber_range)
-        spectrum = cropper.apply(sample.spectrum)
+    # Crop spectra
+    cropper = rp.preprocessing.misc.Cropper(region=wavenumber_range)
+    spectrum = cropper.apply(sample.spectrum)
 
-        spectra_to_visualise.append(spectrum)
+    spectra_to_visualise.append(spectrum)
 
 for sample in plate:
     print(sample)
