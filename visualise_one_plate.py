@@ -4,7 +4,7 @@ import sys
 import pathlib
 import re
 
-from filter import rows_to_remove, cols_to_remove, macbook_url, processing_folder
+from filter import rows_to_remove, cols_to_remove, macbook_url, processing_folder, wavenumber_range
 from sample import Sample
 
 
@@ -42,10 +42,24 @@ for file in files_to_be_processed:
             continue
         elif sample.col in cols_to_remove:
             continue
-        else:
-            spectra_to_visualise.append(sample.spectrum)
-            spectra_labels.append(sample.well)
 
+        # =============
+        # Preprocessing
+        # =============
+
+        # Crop spectra
+        cropper = rp.preprocessing.misc.Cropper(region=wavenumber_range)
+        spectrum = cropper.apply(sample.spectrum)
+
+        spectra_to_visualise.append(spectrum)
+        spectra_labels.append(sample.well)
+
+
+# Confirm samples have been provided
+try:
+    plate[0]
+except IndexError:
+    sys.exit("No files to be processed")
 
 
 # Confirm all samples are from one plate
@@ -58,15 +72,11 @@ for sample in plate:
             sys.exit("Make sure all samples are from one plate")
 
 
-# Confirm samples have been provided
-try:
-    plate[0]
-except IndexError:
-    sys.exit("No files to be processed")
-
 
 if spectra_labels == ["N/A"]:
     spectra_labels[0] = "Glass reference"
+
+# Won't sort the glass reference sample
 else:
     spectra_labels.sort(
         key=lambda x: (re.findall(r"\D+", x)[0], int(re.findall(r"\d+", x)[0]))

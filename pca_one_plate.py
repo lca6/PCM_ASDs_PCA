@@ -5,7 +5,7 @@ import ramanspy as rp
 import sys
 import pathlib
 
-from filter import rows_to_remove, cols_to_remove, macbook_url, processing_folder
+from filter import rows_to_remove, cols_to_remove, macbook_url, processing_folder, wavenumber_range
 from sample import Sample
 from pyphi import pyphi as phi
 from pyphi import pyphi_plots as pp
@@ -34,47 +34,50 @@ for file in files_to_be_processed:
 
     plate.append(sample)
 
+    # =============
+    # Preprocessing
+    # =============
+
     # Filter samples to be included in PCA
     if sample.row in rows_to_remove:
         continue
     elif sample.col in cols_to_remove:
         continue
     
-    else:
-        with open(f"{macbook_url}{file}") as f:
 
-            file = []
-            for line in f:
-                if line[0] != "#":
-                    shift, intensity = line.split("\t", maxsplit=1)
-                    file.append(
-                        dict(
-                            sample=sample.well,
-                            shift=shift,
-                            intensity=intensity[:-1],
-                        )
+
+    with open(f"{macbook_url}{file}") as f:
+
+        file = []
+        for line in f:
+            if line[0] != "#":
+                shift, intensity = line.split("\t", maxsplit=1)
+
+                shift = float(shift)
+                intensity = float(intensity[:-1])
+
+                # Crop dataframe according to wavenumber_range
+                if wavenumber_range[0] is not None:   
+                    if shift < wavenumber_range[0]:
+                        continue
+
+                if wavenumber_range[1] is not None:
+                    if shift > wavenumber_range[1]:
+                        continue
+
+                file.append(
+                    dict(
+                        sample=sample.well,
+                        shift=shift,
+                        intensity=intensity,
                     )
+                )
 
-            file = pd.DataFrame(file)
+        df = pd.DataFrame(file)
 
-            # Convert data to floats before pivoting
-            file["shift"] = file["shift"].astype(float)
-            file["intensity"] = file["intensity"].astype(float)
+        df = df.pivot(index="sample", columns="shift", values="intensity")
 
-            file = file.pivot(index="sample", columns="shift", values="intensity")
-
-            dataframes.append(file)
-
-
-
-# Confirm all samples are from one plate
-plate_num = []
-for sample in plate:
-    plate_num.append(sample.plate)
-
-    for n in plate_num:
-        if sample.plate != n:
-            sys.exit("Make sure all samples are from one plate")
+        dataframes.append(df)
 
 
 # Confirm samples have been provided
@@ -84,11 +87,16 @@ except IndexError:
     sys.exit("No files to be processed")
 
 
+# Confirm all samples are from one plate
+plate_nums = []
+for sample in plate:
+    plate_nums.append(sample.plate)
 
-# ============
-# Preprocessing
-# =============
-# TODO
+    for n in plate_nums:
+        if sample.plate != n:
+            sys.exit("Make sure all samples are from one plate")
+
+
 
 # ============================
 # Principle Component Analysis
@@ -99,3 +107,9 @@ spectral_data = pd.concat(dataframes)
 print(spectral_data)
 
 pcaobj = phi.pca(spectral_data, 3)
+
+# ========================================================
+# Plotting scores and loadings of each Principle Component
+# ========================================================
+
+pp.score_scatter(pcaobj, [1,2], addtitle=f"Plate #{plate[0].plate}")
