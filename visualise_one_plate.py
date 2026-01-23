@@ -4,7 +4,7 @@ import sys
 import pathlib
 import re
 
-from filter import rows_to_remove, cols_to_remove, macbook_url, processing_folder, wavenumber_range
+from filter import rows_to_remove, cols_to_remove, macbook_url, processing_folder, wavenumber_range, sort_files
 from sample import Sample
 
 
@@ -12,13 +12,19 @@ from sample import Sample
 # Visualising the spectra
 # ========================
 
-files_to_be_processed = pathlib.Path(processing_folder)
-files_to_be_processed = [str(x) for x in files_to_be_processed.iterdir()]
+files = pathlib.Path(processing_folder)
+files = [str(x) for x in files.iterdir()]
+
+# Confirm samples have been provided
+try:
+    files[0]
+except IndexError:
+    sys.exit("No files provided")
+
+files_to_be_processed, sample_labels = sort_files(files)
 
 plate = []
 spectra_to_visualise = []
-spectra_labels = []
-
 
 for file in files_to_be_processed:
 
@@ -52,41 +58,14 @@ for file in files_to_be_processed:
         spectrum = cropper.apply(sample.spectrum)
 
         spectra_to_visualise.append(spectrum)
-        spectra_labels.append(sample.well)
 
-
-# Confirm samples have been provided
-try:
-    plate[0]
-except IndexError:
-    sys.exit("No files to be processed")
-
-
-# Confirm all samples are from one plate
-plate_nums = []
 for sample in plate:
-    plate_nums.append(sample.plate)
-
-    for n in plate_nums:
-        if sample.plate != n:
-            sys.exit("Make sure all samples are from one plate")
-
-
-
-if spectra_labels == ["N/A"]:
-    spectra_labels[0] = "Glass reference"
-
-# Won't sort the glass reference sample
-else:
-    spectra_labels.sort(
-        key=lambda x: (re.findall(r"\D+", x)[0], int(re.findall(r"\d+", x)[0]))
-    )
+    print(sample)
 
 rp.plot.spectra(
     spectra_to_visualise,
-    label=spectra_labels,
+    label=sample_labels,
     plot_type="single",
-    title=f"Plate #{plate[0].plate} Concentration {plate[0].concentration} mg/mL",
 )
 
 rp.plot.show()
