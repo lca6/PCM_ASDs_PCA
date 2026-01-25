@@ -22,8 +22,6 @@ from pyphi import pyphi_batch as pb
 files = pathlib.Path(ANALYSIS_FOLDER)
 files = [str(x) for x in files.iterdir()]
 
-plate = []
-dataframes = []
 
 # Confirm samples have been provided
 try:
@@ -34,6 +32,8 @@ except IndexError:
 
 files, sample_labels = sort_files(files)
 
+dataframes = []
+dicts = []
 
 for file in files:
 
@@ -49,21 +49,38 @@ for file in files:
 
     sample.get_sample_metadata(file, spectrum)
 
-    plate.append(sample)
-
-    # =============
-    # Preprocessing
-    # =============
-
     # Filter samples to be included in PCA
     if sample.row in ROWS_TO_REMOVE:
         continue
     elif sample.col in COLS_TO_REMOVE:
         continue
 
+    # =======================
+    # Create sample dataframe
+    # =======================
+
+    dicts.append(
+        dict(
+            sample=sample,
+            plate=sample.plate,
+            well=sample.well,
+            row=sample.row,
+            column=sample.col,
+            concentration=sample.concentration,
+            drug=sample.drug,
+            drug_loading=sample.drug_loading,
+            polymer=sample.polymer,
+            polymer_loading=sample.polymer_loading,
+        )
+    )
+
+    # =========================
+    # Create spectral dataframe
+    # =========================
+
     with open(f"{MACBOOK_URL}{file}") as f:
 
-        file = []
+        l = []
         for line in f:
             if line[0] != "#":
                 shift, intensity = line.split("\t", maxsplit=1)
@@ -80,37 +97,32 @@ for file in files:
                     if shift > WAVENUMBER_RANGE[1]:
                         continue
 
-                file.append(
+                l.append(
                     dict(
-                        sample=sample.well,
+                        sample=sample,
                         shift=shift,
                         intensity=intensity,
                     )
                 )
 
-        df = pd.DataFrame(file)
-
+        df = pd.DataFrame(l)
         df = df.pivot(index="sample", columns="shift", values="intensity")
-
         dataframes.append(df)
 
+
+spectral_data = pd.concat(dataframes)
+
+sample_data = pd.DataFrame(dicts)
+
+print(spectral_data, sample_data)
 
 
 # ============================
 # Principle Component Analysis
 # ============================
 
-spectral_data = pd.concat(dataframes)
-
-print(spectral_data)
-
 pcaobj = phi.pca(spectral_data, 3)
-
-# ========================================================
-# Plotting scores and loadings of each Principle Component
-# ========================================================
 
 title = "PLEASE PROVIDE TITLE"
 
 pp.score_scatter(pcaobj, [1, 2], addtitle=title)
-
