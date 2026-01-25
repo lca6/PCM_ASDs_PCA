@@ -6,11 +6,12 @@ import sys
 import pathlib
 
 from filter import (
-    rows_to_remove,
-    cols_to_remove,
-    macbook_url,
-    processing_folder,
-    wavenumber_range,
+    ROWS_TO_REMOVE,
+    COLS_TO_REMOVE,
+    MACBOOK_URL,
+    ANALYSIS_FOLDER,
+    WAVENUMBER_RANGE,
+    sort_files,
 )
 from sample import Sample
 from pyphi import pyphi as phi
@@ -18,13 +19,23 @@ from pyphi import pyphi_plots as pp
 from pyphi import pyphi_batch as pb
 
 
-files_to_be_processed = pathlib.Path(processing_folder)
-files_to_be_processed = [str(x) for x in files_to_be_processed.iterdir()]
+files = pathlib.Path(ANALYSIS_FOLDER)
+files = [str(x) for x in files.iterdir()]
 
 plate = []
 dataframes = []
 
-for file in files_to_be_processed:
+# Confirm samples have been provided
+try:
+    files[0]
+except IndexError:
+    sys.exit("No files provided")
+
+
+files, sample_labels = sort_files(files)
+
+
+for file in files:
 
     with open(file, encoding="latin-1") as f:
         text = f.read()
@@ -32,7 +43,7 @@ for file in files_to_be_processed:
     with open(file, "w", encoding="utf-8") as f:
         f.write(text)
 
-    spectrum = rp.load.labspec(f"{macbook_url}{file}")
+    spectrum = rp.load.labspec(f"{MACBOOK_URL}{file}")
 
     sample = Sample()
 
@@ -45,12 +56,12 @@ for file in files_to_be_processed:
     # =============
 
     # Filter samples to be included in PCA
-    if sample.row in rows_to_remove:
+    if sample.row in ROWS_TO_REMOVE:
         continue
-    elif sample.col in cols_to_remove:
+    elif sample.col in COLS_TO_REMOVE:
         continue
 
-    with open(f"{macbook_url}{file}") as f:
+    with open(f"{MACBOOK_URL}{file}") as f:
 
         file = []
         for line in f:
@@ -60,13 +71,13 @@ for file in files_to_be_processed:
                 shift = float(shift)
                 intensity = float(intensity[:-1])
 
-                # Crop dataframe according to wavenumber_range
-                if wavenumber_range[0] is not None:
-                    if shift < wavenumber_range[0]:
+                # Crop dataframe according to WAVENUMBER_RANGE
+                if WAVENUMBER_RANGE[0] is not None:
+                    if shift < WAVENUMBER_RANGE[0]:
                         continue
 
-                if wavenumber_range[1] is not None:
-                    if shift > wavenumber_range[1]:
+                if WAVENUMBER_RANGE[1] is not None:
+                    if shift > WAVENUMBER_RANGE[1]:
                         continue
 
                 file.append(
@@ -84,22 +95,6 @@ for file in files_to_be_processed:
         dataframes.append(df)
 
 
-# Confirm samples have been provided
-try:
-    plate[0]
-except IndexError:
-    sys.exit("No files to be processed")
-
-
-# Confirm all samples are from one plate
-plate_nums = []
-for sample in plate:
-    plate_nums.append(sample.plate)
-
-    for n in plate_nums:
-        if sample.plate != n:
-            sys.exit("Make sure all samples are from one plate")
-
 
 # ============================
 # Principle Component Analysis
@@ -115,4 +110,7 @@ pcaobj = phi.pca(spectral_data, 3)
 # Plotting scores and loadings of each Principle Component
 # ========================================================
 
-pp.score_scatter(pcaobj, [1, 2], addtitle=f"Plate #{plate[0].plate}")
+title = "PLEASE PROVIDE TITLE"
+
+pp.score_scatter(pcaobj, [1, 2], addtitle=title)
+

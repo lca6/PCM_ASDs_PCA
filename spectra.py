@@ -5,11 +5,11 @@ import pathlib
 import re
 
 from filter import (
-    rows_to_remove,
-    cols_to_remove,
-    macbook_url,
-    processing_folder,
-    wavenumber_range,
+    ROWS_TO_REMOVE,
+    COLS_TO_REMOVE,
+    MACBOOK_URL,
+    ANALYSIS_FOLDER,
+    WAVENUMBER_RANGE,
     sort_files,
 )
 from sample import Sample
@@ -19,7 +19,7 @@ from sample import Sample
 # Visualising the spectra
 # ========================
 
-files = pathlib.Path(processing_folder)
+files = pathlib.Path(ANALYSIS_FOLDER)
 files = [str(x) for x in files.iterdir()]
 
 # Confirm samples have been provided
@@ -28,12 +28,12 @@ try:
 except IndexError:
     sys.exit("No files provided")
 
-files_to_be_processed, sample_labels = sort_files(files)
+files, sample_labels = sort_files(files)
 
 plate = []
 spectra_to_visualise = []
 
-for file in files_to_be_processed:
+for file in files:
 
     with open(file, encoding="latin-1") as f:
         text = f.read()
@@ -42,7 +42,7 @@ for file in files_to_be_processed:
         f.write(text)
 
     # Loads the Raman object for visualising the spectrum
-    spectrum = rp.load.labspec(f"{macbook_url}{file}")
+    spectrum = rp.load.labspec(f"{MACBOOK_URL}{file}")
 
     sample = Sample()
 
@@ -51,9 +51,9 @@ for file in files_to_be_processed:
     plate.append(sample)
 
     # Filter spectra to be visualised
-    if sample.row in rows_to_remove:
+    if sample.row in ROWS_TO_REMOVE:
         continue
-    elif sample.col in cols_to_remove:
+    elif sample.col in COLS_TO_REMOVE:
         continue
 
     # =============
@@ -61,7 +61,7 @@ for file in files_to_be_processed:
     # =============
 
     # Crop spectra
-    cropper = rp.preprocessing.misc.Cropper(region=wavenumber_range)
+    cropper = rp.preprocessing.misc.Cropper(region=WAVENUMBER_RANGE)
     spectrum = cropper.apply(sample.spectrum)
 
     spectra_to_visualise.append(spectrum)
@@ -69,10 +69,10 @@ for file in files_to_be_processed:
 for sample in plate:
     print(sample)
 
+title = "PLEASE PROVIDE TITLE"
+
 rp.plot.spectra(
-    spectra_to_visualise,
-    label=sample_labels,
-    plot_type="single",
+    spectra_to_visualise, label=sample_labels, plot_type="single", title=title
 )
 
 rp.plot.show()

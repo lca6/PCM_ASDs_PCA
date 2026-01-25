@@ -2,4 +2,4 @@ __pycache__/
 .env
 build/
 *.egg-info/
-to_be_processed/
+analyse/

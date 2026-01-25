@@ -1,56 +1,67 @@
 import pathlib
 import sys
 
-from filter import macbook_url, processing_folder
+from filter import MACBOOK_URL, ANALYSIS_FOLDER
 
 
 def main():
 
-    file = pathlib.Path(processing_folder)
-    file = [str(x) for x in file.iterdir()]
+    files = pathlib.Path(ANALYSIS_FOLDER)
+    files = [str(x) for x in files.iterdir()]
 
-    if len(file) > 1:
-        sys.exit("Too many files")
-
-    if len(file) < 1:
-        sys.exit("Please provide a multiwell file")
-
-    if len(file) == 1:
-        file = file[0]
-
-    plate_info = file.removeprefix(f"{processing_folder}/").removesuffix(
-        "_multiwell.txt"
-    )
-
-    plate_num, plate_conc = plate_info.split("_")
-
-    plate_num = plate_num.removeprefix("plate")
-
+    # Confirm samples have been provided
     try:
-        int(plate_num)
-    except TypeError:
-        sys.exit("Plate number not found")
+        files[0]
+    except IndexError:
+        sys.exit("No files provided")
 
-    plate_conc = plate_conc.removesuffix("mgml")
+    multiwell_files = 0
+    ignored_files = 0
 
-    try:
-        int(plate_conc)
-    except TypeError:
-        sys.exit("Plate concentration not found")
+    for file in files:
 
-    with open(file, encoding="latin-1") as f:
-        text = f.read()
+        if "_multiwell.txt" not in file:
+            ignored_files += 1
+            continue
 
-    with open(file, "w", encoding="utf-8") as f:
-        f.write(text)
+        plate_num, plate_conc = (
+            file.removeprefix(f"{ANALYSIS_FOLDER}/")
+            .removesuffix("_multiwell.txt")
+            .split("_")
+        )
 
-    output_dir = f"{macbook_url}{processing_folder}/"
+        plate_num = plate_num.removeprefix("plate")
 
-    header, spectra = parse_multiwell_file(pathlib.Path(file))
-    write_txt(header, spectra, pathlib.Path(output_dir), plate_num, plate_conc)
+        try:
+            int(plate_num)
+        except TypeError:
+            sys.exit("Plate number not found")
 
-    # Remove multiwell file once parsed
-    pathlib.Path(file).unlink()
+        plate_conc = plate_conc.removesuffix("mgml")
+
+        try:
+            int(plate_conc)
+        except TypeError:
+            sys.exit("Plate concentration not found")
+
+        multiwell_files += 1
+
+        with open(file, encoding="latin-1") as f:
+            text = f.read()
+
+        with open(file, "w", encoding="utf-8") as f:
+            f.write(text)
+
+        output_dir = f"{MACBOOK_URL}{ANALYSIS_FOLDER}/"
+
+        header, spectra = parse_multiwell_file(pathlib.Path(file))
+        write_txt(header, spectra, pathlib.Path(output_dir), plate_num, plate_conc)
+
+        # Remove multiwell file once parsed
+        pathlib.Path(file).unlink()
+
+    print(f"{multiwell_files} multiwell files parsed")
+    print(f"{ignored_files} files ignored")
 
 
 # =====================

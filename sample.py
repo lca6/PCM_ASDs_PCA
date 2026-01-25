@@ -1,4 +1,4 @@
-from filter import processing_folder
+from filter import ANALYSIS_FOLDER
 
 plate1 = {
     "polymer": {
@@ -129,9 +129,7 @@ class Sample:
         self.spectrum = spectrum
 
         file = (
-            filename.removeprefix(f"{processing_folder}/")
-            .removesuffix(".txt")
-            .split("_")
+            filename.removeprefix(f"{ANALYSIS_FOLDER}/").removesuffix(".txt").split("_")
         )
 
         for part in file:
