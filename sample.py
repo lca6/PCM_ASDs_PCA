@@ -110,7 +110,7 @@ plate4 = {
 
 
 class Sample:
-    def __init__(self):
+    def __init__(self, filename: str, spectrum):
 
         self.well = "N/A"
         self.drug = "PCM"
@@ -122,8 +122,6 @@ class Sample:
         self.concentration = 0
         self.drug_loading = 0
         self.polymer_loading = 0
-
-    def get_sample_metadata(self, filename: str, spectrum):
 
         # from rp.load.labspec
         self.spectrum = spectrum

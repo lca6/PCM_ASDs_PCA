@@ -45,9 +45,7 @@ for file in files:
 
     spectrum = rp.load.labspec(f"{MACBOOK_URL}{file}")
 
-    sample = Sample()
-
-    sample.get_sample_metadata(file, spectrum)
+    sample = Sample(file, spectrum)
 
     # Filter samples to be included in PCA
     if sample.row in ROWS_TO_REMOVE:

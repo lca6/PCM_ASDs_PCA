@@ -44,9 +44,7 @@ for file in files:
     # Loads the Raman object for visualising the spectrum
     spectrum = rp.load.labspec(f"{MACBOOK_URL}{file}")
 
-    sample = Sample()
-
-    sample.get_sample_metadata(file, spectrum)
+    sample = Sample(file, spectrum)
 
     plate.append(sample)
 
