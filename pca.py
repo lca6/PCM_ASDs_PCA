@@ -134,9 +134,11 @@ with open("dataframes.txt", "w") as f:
 # Principle Component Analysis
 # ============================
 
+principle_components = int(input("Number of Principle Components: "))
+
 with open("diagnostics.txt", "w") as f:
     with redirect_stdout(f), redirect_stderr(f):
-        pcaobj = phi.pca(spectral_df, 3)
+        pcaobj = phi.pca(spectral_df, principle_components)
 
 
 with open("pcaobj.txt", "w") as f:
@@ -145,7 +147,7 @@ with open("pcaobj.txt", "w") as f:
 
 
 print(
-    """PCA successfully conducted.
+    f"""PCA successfully conducted with {principle_components} Principle Components.
 Please see \"dataframes.txt\" for the dataframes analysed by PCA.
 Please see \"diagnostics.txt\" for the diagnostics sent to the terminal.
 Please see \"pcaobj.txt\" for the elements of the PCA model.
@@ -156,6 +158,24 @@ title = input("Title for score scatter plot: ")
 print(f"Options: {sample_df.columns}")
 colorby = input("Color score scatter plot by: ")
 
+if colorby not in sample_df.columns:
+    sys.exit("Column does not exist. Cannot colour by this parameter.")
+
+first_PC = int(input("Number of first Principle Component: "))
+
+if first_PC < 1 or first_PC > principle_components:
+    sys.exit("Principle Component must be greater than or equal to 1 and less than total number of Principle Components.")
+
+second_PC = int(input("Number of second Principle Component: "))
+
+if second_PC == first_PC:
+    sys.exit("Second Principle Component cannot equal the first.")
+
 pp.score_scatter(
-    pcaobj, [1, 2], addtitle=title, CLASSID=sample_df, colorby=colorby, filename=f"{title}_{colorby}"
+    pcaobj,
+    [first_PC, second_PC],
+    addtitle=f"{title} coloured by {colorby} with {principle_components} Principle Components",
+    CLASSID=sample_df,
+    colorby=colorby,
+    filename=f"{title}_{colorby}_{principle_components} PCs_PC{first_PC} - PC{second_PC}",
 )

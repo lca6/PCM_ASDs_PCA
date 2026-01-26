@@ -878,9 +878,7 @@ def score_scatter(mvm_obj,xydim,*,CLASSID=False,colorby=False,Xnew=False,
                 ObsNum_.append(str(n))  
     
     if isinstance(CLASSID,bool): # No CLASSIDS
-        #rnd_num=str(int(np.round(1000*np.random.random_sample())))
-        rnd_num=timestr()
-        output_file("Score_Scatter_"+rnd_num+".html",title='Score Scatter t['+str(xydim[0])+'] - t['+str(xydim[1])+ ']',mode='inline')
+        output_file(f"Score_Scatter_{filename}.html",title='Score Scatter PC'+str(xydim[0])+' - PC'+str(xydim[1]),mode='inline')
 
         x_=T_matrix[:,[xydim[0]-1]]
         y_=T_matrix[:,[xydim[1]-1]]
@@ -894,7 +892,7 @@ def score_scatter(mvm_obj,xydim,*,CLASSID=False,colorby=False,Xnew=False,
                 ("Obs: ","@ObsID")
                 ]
         
-        p = figure(tools=TOOLS, tooltips=TOOLTIPS,width=plotwidth,height=plotheight, title='Score Scatter t['+str(xydim[0])+'] - t['+str(xydim[1])+ '] '+addtitle)
+        p = figure(tools=TOOLS, tooltips=TOOLTIPS,width=plotwidth,height=plotheight, title='Score Scatter PC'+str(xydim[0])+' - PC'+str(xydim[1])+ ' '+addtitle)
         #p.circle('x', 'y', source=source,size=marker_size)
         p.scatter('x', 'y', source=source,size=marker_size)
         if add_ci:
@@ -912,11 +910,11 @@ def score_scatter(mvm_obj,xydim,*,CLASSID=False,colorby=False,Xnew=False,
             labelsX = LabelSet(x='x', y='y', text='ObsID', level='glyph',x_offset=5, y_offset=5, source=source)
             p.add_layout(labelsX)
         if not(rscores):    
-            p.xaxis.axis_label = 't ['+str(xydim[0])+']'
-            p.yaxis.axis_label = 't ['+str(xydim[1])+']'
+            p.xaxis.axis_label = 'PC'+str(xydim[0])
+            p.yaxis.axis_label = 'PC'+str(xydim[1])
         else:
-            p.xaxis.axis_label = 'r ['+str(xydim[0])+']'
-            p.yaxis.axis_label = 'r ['+str(xydim[1])+']'
+            p.xaxis.axis_label = 'PC'+str(xydim[0])
+            p.yaxis.axis_label = 'PC'+str(xydim[1])
         # Vertical line
         vline = Span(location=0, dimension='height', line_color='black', line_width=2)
         # Horizontal line
@@ -964,7 +962,7 @@ def score_scatter(mvm_obj,xydim,*,CLASSID=False,colorby=False,Xnew=False,
                      color_mapping=np.vstack((np.array([225,225,225,255]),color_mapping))
 
         bokeh_palette=["#%02x%02x%02x" % (r, g, b) for r, g, b in color_mapping[:,0:3]]         
-        output_file(f"Score_Scatter_{filename}.html",title='Score Scatter t['+str(xydim[0])+'] - t['+str(xydim[1])+ ']',mode='inline') 
+        output_file(f"Score_Scatter_{filename}.html",title='Score Scatter PC'+str(xydim[0])+' - PC'+str(xydim[1]),mode='inline') 
         x_=T_matrix[:,[xydim[0]-1]]
         y_=T_matrix[:,[xydim[1]-1]]          
         
@@ -982,7 +980,7 @@ def score_scatter(mvm_obj,xydim,*,CLASSID=False,colorby=False,Xnew=False,
         classid_=list(CLASSID[colorby])
         legend_it = []
         
-        p = figure(tools=TOOLS, tooltips=TOOLTIPS,toolbar_location="above",width=plotwidth,height=plotheight,title='Score Scatter t['+str(xydim[0])+'] - t['+str(xydim[1])+ '] '+addtitle)
+        p = figure(tools=TOOLS, tooltips=TOOLTIPS,toolbar_location="above",width=plotwidth,height=plotheight,title='Score Scatter PC'+str(xydim[0])+' - PC'+str(xydim[1])+ ' '+addtitle)
 
         for classid_in_turn in Classes_:                      
             x_aux       = []
@@ -1026,11 +1024,11 @@ def score_scatter(mvm_obj,xydim,*,CLASSID=False,colorby=False,Xnew=False,
             p.line(xd99,yd99p,line_color="red",line_dash='dashed')
             p.line(xd99,yd99n,line_color="red",line_dash='dashed') 
         if not(rscores):    
-            p.xaxis.axis_label = 't ['+str(xydim[0])+']'
-            p.yaxis.axis_label = 't ['+str(xydim[1])+']'
+            p.xaxis.axis_label = 'PC'+str(xydim[0])
+            p.yaxis.axis_label = 'PC'+str(xydim[1])
         else:
-            p.xaxis.axis_label = 'r ['+str(xydim[0])+']'
-            p.yaxis.axis_label = 'r ['+str(xydim[1])+']'
+            p.xaxis.axis_label = 'PC'+str(xydim[0])
+            p.yaxis.axis_label = 'PC'+str(xydim[1])
         # Vertical line
         vline = Span(location=0, dimension='height', line_color='black', line_width=2)
         # Horizontal line
