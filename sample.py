@@ -108,12 +108,12 @@ plate4 = {
     },
 }
 
-
 class Sample:
+
     def __init__(self, filename: str, spectrum):
 
-        self.well = "N/A"
         self.drug = "PCM"
+        self.well = "N/A"
         self.polymer = "N/A"
         self.row = "N/A"
 
@@ -127,10 +127,15 @@ class Sample:
         self.spectrum = spectrum
 
         file = (
-            filename.removeprefix(f"{ANALYSIS_FOLDER}/").removesuffix(".txt").split("_")
+            filename.removeprefix(f"{ANALYSIS_FOLDER}/").removesuffix(".txt")
         )
 
-        for part in file:
+        if file == "glass_reference":
+            self.drug = "N/A"
+            self.well = "Glass"
+            return
+
+        for part in file.split("_"):
             # e.g. A12
             if part[0].isupper():
                 self.well = part
@@ -173,4 +178,7 @@ class Sample:
                 self.polymer_loading = 100 - self.drug_loading
 
     def __str__(self):
-        return f"Sample {self.well} on plate #{self.plate} at concentration {self.concentration} mg/mL {self.drug}/{self.polymer} {self.drug_loading}%/{self.polymer_loading}% "
+        if self.well == "Glass":
+            return "Glass reference"
+        else:
+            return f"Sample {self.well} on plate #{self.plate} at concentration {self.concentration} mg/mL {self.drug}/{self.polymer} {self.drug_loading}%/{self.polymer_loading}% "

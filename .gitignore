@@ -6,4 +6,6 @@ analyse/
 dataframes.txt
 diagnostics.txt
 pcaobj.txt
+spectra_samples.txt
 *.html
+*.png

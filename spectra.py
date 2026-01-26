@@ -1,8 +1,11 @@
+import matplotlib.pyplot as plt
 import ramanspy as rp
 
 import sys
 import pathlib
 import re
+
+from contextlib import redirect_stdout, redirect_stderr
 
 from filter import (
     ROWS_TO_REMOVE,
@@ -60,13 +63,18 @@ for file in files:
 
     spectra_to_visualise.append(spectrum)
 
-for sample in plate:
-    print(sample)
+with open("spectra_samples.txt", "w") as f:
+    with redirect_stdout(f), redirect_stderr(f):
+        for sample in plate:
+            print(sample)
 
-title = "PLEASE PROVIDE TITLE"
+title = input("Title for Raman spectra: ")
 
 rp.plot.spectra(
-    spectra_to_visualise, label=sample_labels, plot_type="single", title=title
+    spectra_to_visualise, label=sample_labels, plot_type="single", title="Raman spectrum "+title
 )
 
-rp.plot.show()
+plt.savefig(f"raman_spectrum_{title}")
+plt.show()
+
+print("Please see \"spectra_samples.txt\" for a list of the samples displayed.")

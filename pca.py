@@ -16,6 +16,7 @@ from filter import (
     sort_files,
 )
 from sample import Sample
+from pprint import pprint
 from pyphi import pyphi as phi
 from pyphi import pyphi_plots as pp
 from pyphi import pyphi_batch as pb
@@ -140,7 +141,7 @@ with open("diagnostics.txt", "w") as f:
 
 with open("pcaobj.txt", "w") as f:
     with redirect_stdout(f), redirect_stderr(f):
-        print(pcaobj)
+        pprint(pcaobj)
 
 
 print(
@@ -156,5 +157,5 @@ print(f"Options: {sample_df.columns}")
 colorby = input("Color score scatter plot by: ")
 
 pp.score_scatter(
-    pcaobj, [1, 2], addtitle=title, CLASSID=sample_df, colorby=colorby, filename=title
+    pcaobj, [1, 2], addtitle=title, CLASSID=sample_df, colorby=colorby, filename=f"{title}_{colorby}"
 )
