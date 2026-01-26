@@ -1,7 +1,7 @@
 import pathlib
 import sys
 
-from filter import MACBOOK_URL, ANALYSIS_FOLDER
+from filter import MACBOOK_URL, ANALYSIS_FOLDER, sort_files
 
 
 def main():
@@ -15,7 +15,8 @@ def main():
     except IndexError:
         sys.exit("No files provided")
 
-    multiwell_files = 0
+    files, _ = sort_files(files)
+
     ignored_files = 0
 
     for file in files:
@@ -44,8 +45,6 @@ def main():
         except TypeError:
             sys.exit("Plate concentration not found")
 
-        multiwell_files += 1
-
         with open(file, encoding="latin-1") as f:
             text = f.read()
 
@@ -57,10 +56,11 @@ def main():
         header, spectra = parse_multiwell_file(pathlib.Path(file))
         write_txt(header, spectra, pathlib.Path(output_dir), plate_num, plate_conc)
 
+        print(f"{file} was parsed")
+
         # Remove multiwell file once parsed
         pathlib.Path(file).unlink()
 
-    print(f"{multiwell_files} multiwell files parsed")
     print(f"{ignored_files} files ignored")
 
 

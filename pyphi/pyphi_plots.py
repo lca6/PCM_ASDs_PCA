@@ -756,7 +756,7 @@ def _create_classid_(df,column,*,nbins=5):
 def score_scatter(mvm_obj,xydim,*,CLASSID=False,colorby=False,Xnew=False,
                   add_ci=False,add_labels=False,add_legend=True,legend_cols=1, 
                   addtitle='',plotwidth=600,plotheight=600,
-                  rscores=False,material=False,marker_size=7,nbins=False,include_model=False):
+                  rscores=False,material=False,marker_size=7,nbins=False,include_model=False,filename=False):
     '''Score scatter plot
     
     score_scatter(mvm_obj,xydim,*,CLASSID=False,colorby=False,nbins=False,Xnew=False,
@@ -963,10 +963,8 @@ def score_scatter(mvm_obj,xydim,*,CLASSID=False,colorby=False,Xnew=False,
                      color_mapping=colormap(np.linspace(0,1,different_colors-1),1,True)
                      color_mapping=np.vstack((np.array([225,225,225,255]),color_mapping))
 
-        bokeh_palette=["#%02x%02x%02x" % (r, g, b) for r, g, b in color_mapping[:,0:3]]  
-        #rnd_num=str(int(np.round(1000*np.random.random_sample())))  
-        rnd_num=timestr()         
-        output_file("Score_Scatter_"+rnd_num+".html",title='Score Scatter t['+str(xydim[0])+'] - t['+str(xydim[1])+ ']',mode='inline') 
+        bokeh_palette=["#%02x%02x%02x" % (r, g, b) for r, g, b in color_mapping[:,0:3]]         
+        output_file(f"Score_Scatter_{filename}.html",title='Score Scatter t['+str(xydim[0])+'] - t['+str(xydim[1])+ ']',mode='inline') 
         x_=T_matrix[:,[xydim[0]-1]]
         y_=T_matrix[:,[xydim[1]-1]]          
         

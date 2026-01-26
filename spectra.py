@@ -54,10 +54,6 @@ for file in files:
     elif sample.col in COLS_TO_REMOVE:
         continue
 
-    # =============
-    # Preprocessing
-    # =============
-
     # Crop spectra
     cropper = rp.preprocessing.misc.Cropper(region=WAVENUMBER_RANGE)
     spectrum = cropper.apply(sample.spectrum)

@@ -26,23 +26,30 @@ def sort_files(files):
         glass_reference = True
         files.remove(f"{ANALYSIS_FOLDER}/glass_reference.txt")
 
-    # Plate number, row letter, column number
-    pattern = re.compile(r"plate(\d+)_.*_([A-H])(\d+)(?:_|\.txt)")
+    plate_pattern = re.compile(r"plate(\d+)")
+    well_pattern = re.compile(r"_([A-H])(\d+)(?:_[^\.]+)?\.txt$")
+    multiwell_pattern = re.compile(r"_multiwell\.txt$")
 
-    sorted_files = sorted(
-        files,
-        key=lambda x: (
-            int(pattern.search(x).group(1)),  # plate number
-            pattern.search(x).group(2),  # row letter
-            int(pattern.search(x).group(3)),  # column number
-        ),
-    )
+    def sort_key(filename):
+        plate = int(plate_pattern.search(filename).group(1))
 
-    sample_labels = [
-        f"{m.group(2)}{m.group(3)}"
-        for f in sorted_files
-        if (m := pattern.search(f)) is not None
-    ]
+        # Multiwell file: no row/column
+        if multiwell_pattern.search(filename):
+            return (plate, -1, -1)  # sorts before well-level files
+
+        # Well-level file
+        m = well_pattern.search(filename)
+        return (plate, ord(m.group(1)), int(m.group(2)))
+
+    sorted_files = sorted(files, key=sort_key)
+
+    sample_labels = []
+    for f in sorted_files:
+        m = well_pattern.search(f)
+        if m:
+            sample_labels.append(f"{m.group(1)}{m.group(2)}")
+        else:
+            sample_labels.append("multiwell")
 
     if glass_reference == True:
         sorted_files.append(f"{ANALYSIS_FOLDER}/glass_reference.txt")

@@ -5,6 +5,8 @@ import ramanspy as rp
 import sys
 import pathlib
 
+from contextlib import redirect_stdout, redirect_stderr
+
 from filter import (
     ROWS_TO_REMOVE,
     COLS_TO_REMOVE,
@@ -108,19 +110,51 @@ for file in files:
         dataframes.append(df)
 
 
-spectral_data = pd.concat(dataframes)
+spectral_df = pd.concat(dataframes)
 
-sample_data = pd.DataFrame(dicts)
+sample_df = pd.DataFrame(dicts)
 
-print(spectral_data, sample_data)
+with open("dataframes.txt", "w") as f:
+    with redirect_stdout(f), redirect_stderr(f):
+        with pd.option_context(
+            "display.max_rows",
+            None,
+            "display.max_columns",
+            None,
+            "display.max_colwidth",
+            None,
+            "display.width",
+            None,
+        ):
+            print(spectral_df, "\n\n", sample_df)
 
 
 # ============================
 # Principle Component Analysis
 # ============================
 
-pcaobj = phi.pca(spectral_data, 3)
+with open("diagnostics.txt", "w") as f:
+    with redirect_stdout(f), redirect_stderr(f):
+        pcaobj = phi.pca(spectral_df, 3)
 
-title = "PLEASE PROVIDE TITLE"
 
-pp.score_scatter(pcaobj, [1, 2], addtitle=title)
+with open("pcaobj.txt", "w") as f:
+    with redirect_stdout(f), redirect_stderr(f):
+        print(pcaobj)
+
+
+print(
+    """PCA successfully conducted.
+Please see \"dataframes.txt\" for the dataframes analysed by PCA.
+Please see \"diagnostics.txt\" for the diagnostics sent to the terminal.
+Please see \"pcaobj.txt\" for the elements of the PCA model.
+"""
+)
+
+title = input("Title for score scatter plot: ")
+print(f"Options: {sample_df.columns}")
+colorby = input("Color score scatter plot by: ")
+
+pp.score_scatter(
+    pcaobj, [1, 2], addtitle=title, CLASSID=sample_df, colorby=colorby, filename=title
+)
