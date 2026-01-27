@@ -878,7 +878,7 @@ def score_scatter(mvm_obj,xydim,*,CLASSID=False,colorby=False,Xnew=False,
                 ObsNum_.append(str(n))  
     
     if isinstance(CLASSID,bool): # No CLASSIDS
-        output_file(f"Score_Scatter_{filename}.html",title='Score Scatter PC'+str(xydim[0])+' - PC'+str(xydim[1]),mode='inline')
+        output_file(f"Score_Scatter_{filename}.html",title='Score Scatter PC'+str(xydim[0])+'/PC'+str(xydim[1]),mode='inline')
 
         x_=T_matrix[:,[xydim[0]-1]]
         y_=T_matrix[:,[xydim[1]-1]]
@@ -892,7 +892,7 @@ def score_scatter(mvm_obj,xydim,*,CLASSID=False,colorby=False,Xnew=False,
                 ("Obs: ","@ObsID")
                 ]
         
-        p = figure(tools=TOOLS, tooltips=TOOLTIPS,width=plotwidth,height=plotheight, title='Score Scatter PC'+str(xydim[0])+' - PC'+str(xydim[1])+ ' '+addtitle)
+        p = figure(tools=TOOLS, tooltips=TOOLTIPS,width=plotwidth,height=plotheight, title='Score Scatter PC'+str(xydim[0])+'/PC'+str(xydim[1])+ ' - '+addtitle)
         #p.circle('x', 'y', source=source,size=marker_size)
         p.scatter('x', 'y', source=source,size=marker_size)
         if add_ci:
@@ -962,7 +962,7 @@ def score_scatter(mvm_obj,xydim,*,CLASSID=False,colorby=False,Xnew=False,
                      color_mapping=np.vstack((np.array([225,225,225,255]),color_mapping))
 
         bokeh_palette=["#%02x%02x%02x" % (r, g, b) for r, g, b in color_mapping[:,0:3]]         
-        output_file(f"Score_Scatter_{filename}.html",title='Score Scatter PC'+str(xydim[0])+' - PC'+str(xydim[1]),mode='inline') 
+        output_file(f"Score_Scatter_{filename}.html",title='Score Scatter PC'+str(xydim[0])+'/PC'+str(xydim[1]),mode='inline') 
         x_=T_matrix[:,[xydim[0]-1]]
         y_=T_matrix[:,[xydim[1]-1]]          
         
@@ -980,7 +980,7 @@ def score_scatter(mvm_obj,xydim,*,CLASSID=False,colorby=False,Xnew=False,
         classid_=list(CLASSID[colorby])
         legend_it = []
         
-        p = figure(tools=TOOLS, tooltips=TOOLTIPS,toolbar_location="above",width=plotwidth,height=plotheight,title='Score Scatter PC'+str(xydim[0])+' - PC'+str(xydim[1])+ ' '+addtitle)
+        p = figure(tools=TOOLS, tooltips=TOOLTIPS,toolbar_location="above",width=plotwidth,height=plotheight,title='Score Scatter PC'+str(xydim[0])+'/PC'+str(xydim[1])+ ' - '+addtitle)
 
         for classid_in_turn in Classes_:                      
             x_aux       = []
@@ -1218,7 +1218,7 @@ def score_line(mvmobj,dim,*,CLASSID=False,colorby=False,Xnew=False,add_ci=False,
 
 
 
-def diagnostics(mvmobj,*,Xnew=False,Ynew=False,score_plot_xydim=False,plotwidth=600,ht2_logscale=False,spe_logscale=False):
+def diagnostics(mvmobj,*,Xnew=False,Ynew=False,score_plot_xydim=False,plotwidth=600,ht2_logscale=False,spe_logscale=False, filename=False, addtitle=False):
     """Hotelling's T2 and SPE
     
     diagnostics(mvmobj,*,Xnew=False,Ynew=False,score_plot_xydim=False,plotwidth=600,ht2_logscale=False,spe_logscale=False):
@@ -1338,11 +1338,9 @@ def diagnostics(mvmobj,*,Xnew=False,Ynew=False,score_plot_xydim=False,plotwidth=
             ("(x,y)", "($x, $y)"),
             ("Obs: ","@ObsID")
             ]
-    
-    #rnd_num=str(int(np.round(1000*np.random.random_sample())))      
-    rnd_num=timestr()         
-    output_file("Diagnostics"+rnd_num+".html",title='Diagnostics',mode='inline') 
-    p = figure(tools=TOOLS, tooltips=TOOLTIPS, width=plotwidth, title="Hotelling's T2")
+          
+    output_file(f"Hotelling's T2 and SPE_{filename}.html",title="Hotelling's T2 and SPE",mode='inline') 
+    p = figure(tools=TOOLS, tooltips=TOOLTIPS, width=plotwidth, title=f"Hotelling's T2 - {addtitle}")
     #p.circle('x','t2',source=source)
     p.scatter('x','t2',source=source)
     if ht2_logscale:
@@ -1357,7 +1355,7 @@ def diagnostics(mvmobj,*,Xnew=False,Ynew=False,score_plot_xydim=False,plotwidth=
     p.yaxis.axis_label = "HT2"
     p_list=[p]
     
-    p = figure(tools=TOOLS, tooltips=TOOLTIPS, width=plotwidth, title='SPE X')
+    p = figure(tools=TOOLS, tooltips=TOOLTIPS, width=plotwidth, title=f'SPE X - {addtitle}')
     #p.circle('x','spex',source=source)
     p.scatter('x','spex',source=source)
     
@@ -1372,7 +1370,7 @@ def diagnostics(mvmobj,*,Xnew=False,Ynew=False,score_plot_xydim=False,plotwidth=
     p.yaxis.axis_label = 'SPE X-Space'
     p_list.append(p)
     
-    p = figure(tools=TOOLS, tooltips=TOOLTIPS, width=plotwidth, title='Outlier Map')
+    p = figure(tools=TOOLS, tooltips=TOOLTIPS, width=plotwidth, title=f'Outlier Map - {addtitle}')
     #p.circle('t2','spex',source=source)
     p.scatter('t2','spex',source=source)
     
@@ -1392,7 +1390,7 @@ def diagnostics(mvmobj,*,Xnew=False,Ynew=False,score_plot_xydim=False,plotwidth=
     
     
     if 'Q' in mvmobj and not(isinstance(spey_,bool)):
-        p = figure(tools=TOOLS, tooltips=TOOLTIPS, height=400, title='SPE Y')
+        p = figure(tools=TOOLS, tooltips=TOOLTIPS, height=400, title=f'SPE Y {addtitle}')
         #p.circle('x','spey',source=source)
         p.scatter('x','spey',source=source,size=10)
         p.line([0,Obs_num[-1]],[mvmobj['speY_lim95'],mvmobj['speY_lim95']],line_color='gold')
@@ -1401,7 +1399,7 @@ def diagnostics(mvmobj,*,Xnew=False,Ynew=False,score_plot_xydim=False,plotwidth=
         p.yaxis.axis_label = 'SPE Y-Space'
         p_list.append(p)
     if add_score_plot:
-        p = figure(tools=TOOLS, tooltips=TOOLTIPS, width=plotwidth, title='Score Scatter')
+        p = figure(tools=TOOLS, tooltips=TOOLTIPS, width=plotwidth, title=f'Score Scatter {addtitle}')
         #p.circle('tx', 'ty', source=source,size=7)
         p.scatter('tx', 'ty', source=source,size=10)
         
@@ -1414,8 +1412,8 @@ def diagnostics(mvmobj,*,Xnew=False,Ynew=False,score_plot_xydim=False,plotwidth=
         p.line(xd95,yd95n,line_color="gold",line_dash='dashed')
         p.line(xd99,yd99p,line_color="red",line_dash='dashed')
         p.line(xd99,yd99n,line_color="red",line_dash='dashed') 
-        p.xaxis.axis_label = 't ['+str(score_plot_xydim[0])+']'
-        p.yaxis.axis_label = 't ['+str(score_plot_xydim[1])+']'
+        p.xaxis.axis_label = 'PC'+str(score_plot_xydim[0])
+        p.yaxis.axis_label = 'PC'+str(score_plot_xydim[1])
         # Vertical line
         vline = Span(location=0, dimension='height', line_color='black', line_width=2)
         # Horizontal line

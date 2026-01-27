@@ -12,6 +12,7 @@ from filter import (
     COLS_TO_REMOVE,
     MACBOOK_URL,
     ANALYSIS_FOLDER,
+    OUTPUT_FOLDER,
     WAVENUMBER_RANGE,
     sort_files,
 )
@@ -115,7 +116,7 @@ spectral_df = pd.concat(dataframes)
 
 sample_df = pd.DataFrame(dicts)
 
-with open("dataframes.txt", "w") as f:
+with open(f"{OUTPUT_FOLDER}/dataframes.txt", "w") as f:
     with redirect_stdout(f), redirect_stderr(f):
         with pd.option_context(
             "display.max_rows",
@@ -135,38 +136,45 @@ with open("dataframes.txt", "w") as f:
 # ============================
 
 principle_components = int(input("Number of Principle Components: "))
+print()
 
-with open("diagnostics.txt", "w") as f:
+with open(f"{OUTPUT_FOLDER}/diagnostics.txt", "w") as f:
     with redirect_stdout(f), redirect_stderr(f):
         pcaobj = phi.pca(spectral_df, principle_components)
 
 
-with open("pcaobj.txt", "w") as f:
+with open(f"{OUTPUT_FOLDER}/pcaobj.txt", "w") as f:
     with redirect_stdout(f), redirect_stderr(f):
         pprint(pcaobj)
 
 
 print(
-    f"""PCA successfully conducted with {principle_components} Principle Components.
-Please see \"dataframes.txt\" for the dataframes analysed by PCA.
-Please see \"diagnostics.txt\" for the diagnostics sent to the terminal.
-Please see \"pcaobj.txt\" for the elements of the PCA model.
+    f"""PCA successfully conducted with {principle_components} Principle Components.\n
+Please see \"{OUTPUT_FOLDER}/dataframes.txt\" for the dataframes analysed by PCA.\n
+Please see \"{OUTPUT_FOLDER}/diagnostics.txt\" for the diagnostics sent to the terminal.\n
+Please see \"{OUTPUT_FOLDER}/pcaobj.txt\" for the elements of the PCA model.
 """
 )
 
-title = input("Title for score scatter plot: ")
-print(f"Options: {sample_df.columns}")
-colorby = input("Color score scatter plot by: ")
+title = input("Title for score scatter plot: ").title()
+print()
+print(f"Options: {sample_df.columns}\n")
+colorby = input("Color score scatter plot by: ").lower()
+print()
 
 if colorby not in sample_df.columns:
     sys.exit("Column does not exist. Cannot colour by this parameter.")
 
 first_PC = int(input("Number of first Principle Component: "))
+print()
 
 if first_PC < 1 or first_PC > principle_components:
-    sys.exit("Principle Component must be greater than or equal to 1 and less than total number of Principle Components.")
+    sys.exit(
+        "Principle Component must be greater than or equal to 1 and less than total number of Principle Components."
+    )
 
 second_PC = int(input("Number of second Principle Component: "))
+print()
 
 if second_PC == first_PC:
     sys.exit("Second Principle Component cannot equal the first.")
@@ -174,8 +182,14 @@ if second_PC == first_PC:
 pp.score_scatter(
     pcaobj,
     [first_PC, second_PC],
-    addtitle=f"{title} coloured by {colorby} with {principle_components} Principle Components",
+    addtitle=f"{title} coloured by {colorby.capitalize()} with {principle_components} Principle Components",
     CLASSID=sample_df,
     colorby=colorby,
-    filename=f"{title}_{colorby}_{principle_components} PCs_PC{first_PC} - PC{second_PC}",
+    filename=f"{title}_{colorby.capitalize()}_{principle_components} PCs_PC{first_PC} - PC{second_PC}",
+)
+
+pp.diagnostics(
+    pcaobj,
+    addtitle=f"{title} coloured by {colorby.capitalize()} with {principle_components} Principle Components",
+    filename=f"{title}_{colorby.capitalize()}_{principle_components} PCs_PC{first_PC} - PC{second_PC}",
 )
