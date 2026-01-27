@@ -17,12 +17,10 @@ def main():
 
     files, _ = sort_files(files)
 
-    ignored_files = 0
-
     for file in files:
 
         if "_multiwell.txt" not in file:
-            ignored_files += 1
+            print(f"{file} was ignored")
             continue
 
         plate_num, plate_conc = (
@@ -56,12 +54,10 @@ def main():
         header, spectra = parse_multiwell_file(pathlib.Path(file))
         write_txt(header, spectra, pathlib.Path(output_dir), plate_num, plate_conc)
 
-        print(f"{file} was parsed")
+        print(f"{file} WAS PARSED")
 
         # Remove multiwell file once parsed
         pathlib.Path(file).unlink()
-
-    print(f"{ignored_files} files ignored")
 
 
 # =====================
