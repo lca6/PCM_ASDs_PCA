@@ -6,6 +6,7 @@ load_dotenv()
 
 MACBOOK_URL = getenv("MACBOOK_URL")
 ANALYSIS_FOLDER = getenv("ANALYSIS_FOLDER")
+OUTPUT_FOLDER = getenv("OUTPUT_FOLDER")
 
 
 # Filter samples by rows (e.g. "B")

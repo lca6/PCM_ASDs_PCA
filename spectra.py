@@ -12,6 +12,7 @@ from filter import (
     COLS_TO_REMOVE,
     MACBOOK_URL,
     ANALYSIS_FOLDER,
+    OUTPUT_FOLDER,
     WAVENUMBER_RANGE,
     sort_files,
 )
@@ -63,7 +64,7 @@ for file in files:
 
     spectra_to_visualise.append(spectrum)
 
-with open("spectra_samples.txt", "w") as f:
+with open(f"{OUTPUT_FOLDER}/spectra_samples.txt", "w") as f:
     with redirect_stdout(f), redirect_stderr(f):
         for sample in plate:
             print(sample)
@@ -77,4 +78,4 @@ rp.plot.spectra(
 plt.savefig(f"raman_spectrum_{title}")
 plt.show()
 
-print("Please see \"spectra_samples.txt\" for a list of the samples displayed.")
+print(f"Please see \"{OUTPUT_FOLDER}/spectra_samples.txt\" for a list of the samples displayed.")

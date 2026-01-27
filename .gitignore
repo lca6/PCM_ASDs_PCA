@@ -3,9 +3,6 @@ __pycache__/
 build/
 *.egg-info/
 analyse/
-dataframes.txt
-diagnostics.txt
-pcaobj.txt
-spectra_samples.txt
+output/
 *.html
 *.png
