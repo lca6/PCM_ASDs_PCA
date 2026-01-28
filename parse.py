@@ -54,7 +54,7 @@ def main():
         header, spectra = parse_multiwell_file(pathlib.Path(file))
         write_txt(header, spectra, pathlib.Path(output_dir), plate_num, plate_conc)
 
-        print(f"{file} WAS PARSED")
+        print(f"{file} was parsed")
 
         # Remove multiwell file once parsed
         pathlib.Path(file).unlink()
