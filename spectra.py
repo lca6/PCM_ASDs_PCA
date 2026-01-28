@@ -69,10 +69,10 @@ with open(f"{OUTPUT_FOLDER}/spectra_samples.txt", "w") as f:
         for sample in plate:
             print(sample)
 
-title = input("Title for Raman spectra: ")
+title = input("Title for Raman spectra: ").title()
 
 rp.plot.spectra(
-    spectra_to_visualise, label=sample_labels, plot_type="single", title="Raman spectrum "+title
+    spectra_to_visualise, label=sample_labels, plot_type="single", title="Raman spectrum - "+title
 )
 
 plt.savefig(f"raman_spectrum_{title}")
