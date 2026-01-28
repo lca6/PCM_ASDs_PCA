@@ -29,14 +29,15 @@ def sort_files(files):
 
     plate_pattern = re.compile(r"plate(\d+)")
     well_pattern = re.compile(r"_([A-H])(\d+)(?:_[^\.]+)?\.txt$")
+    edge_pattern = re.compile(r"_edge\.txt$")
     multiwell_pattern = re.compile(r"_multiwell\.txt$")
 
     def sort_key(filename):
         plate = int(plate_pattern.search(filename).group(1))
 
-        # Multiwell file: no row/column
+        # Multiwell file
         if multiwell_pattern.search(filename):
-            return (plate, -1, -1)  # sorts before well-level files
+            return (plate, -1, -1)
 
         # Well-level file
         m = well_pattern.search(filename)
@@ -46,11 +47,9 @@ def sort_files(files):
 
     sample_labels = []
     for f in sorted_files:
-        m = well_pattern.search(f)
-        if m:
-            sample_labels.append(f"{m.group(1)}{m.group(2)}")
-        else:
-            sample_labels.append("multiwell")
+        if m := well_pattern.search(f):
+            location = "(edge)" if edge_pattern.search(f) else "(centre)"
+            sample_labels.append(f"{m.group(1)}{m.group(2)} {location}")
 
     if glass_reference == True:
         sorted_files.append(f"{ANALYSIS_FOLDER}/glass_reference.txt")
