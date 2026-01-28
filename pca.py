@@ -1,12 +1,12 @@
-import pandas as pd
+import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import ramanspy as rp
 
-import sys
 import pathlib
+import sys
 
 from contextlib import redirect_stdout, redirect_stderr
-
 from filter import (
     ROWS_TO_REMOVE,
     COLS_TO_REMOVE,
@@ -16,12 +16,12 @@ from filter import (
     WAVENUMBER_RANGE,
     sort_files,
 )
-from sample import Sample
+from matplotlib.ticker import MaxNLocator
 from pprint import pprint
 from pyphi import pyphi as phi
-from pyphi import pyphi_plots as pp
 from pyphi import pyphi_batch as pb
-
+from pyphi import pyphi_plots as pp
+from sample import Sample
 
 files = pathlib.Path(ANALYSIS_FOLDER)
 files = [str(x) for x in files.iterdir()]
@@ -73,6 +73,7 @@ for file in files:
             drug_loading=sample.drug_loading,
             polymer=sample.polymer,
             polymer_loading=sample.polymer_loading,
+            position=sample.position,
         )
     )
 
@@ -138,6 +139,8 @@ with open(f"{OUTPUT_FOLDER}/dataframes.txt", "w") as f:
 principle_components = int(input("Number of Principle Components: "))
 print()
 
+x = [x for x in range(1, principle_components + 1)]
+
 with open(f"{OUTPUT_FOLDER}/diagnostics.txt", "w") as f:
     with redirect_stdout(f), redirect_stderr(f):
         pcaobj = phi.pca(spectral_df, principle_components)
@@ -146,6 +149,56 @@ with open(f"{OUTPUT_FOLDER}/diagnostics.txt", "w") as f:
 with open(f"{OUTPUT_FOLDER}/pcaobj.txt", "w") as f:
     with redirect_stdout(f), redirect_stderr(f):
         pprint(pcaobj)
+
+    y = []
+    sum_r2x = 0
+
+    for i in pcaobj["r2x"]:
+
+        if np.isnan(i):
+            sys.exit(f"PCA not successful. Please check \"{OUTPUT_FOLDER}/pcaobj.txt\" for the elements of the PCA model.")
+        else:
+            sum_r2x += i
+            y.append(round(sum_r2x, 3))
+
+if len(x) != len(y):
+        raise ValueError("x and y must be the same length")
+
+num_pcs = len(x)
+filename = f"PC - sum(r2x)_{num_pcs} PCs.png"
+
+# Plot PCs vs sum(R2X) as a line graph
+fig, ax = plt.subplots()
+ax.plot(x, y)
+
+# Line + points in bold
+ax.plot(
+    x,
+    y,
+    marker="o",
+    linestyle="-",
+    linewidth=1.5,
+    markersize=4,
+    markeredgewidth=2,
+)
+
+ax.set_xlabel("Principal Components")
+ax.set_ylabel("Sum(r2x)")
+ax.set_title("Principal Components vs Sum(r2x)")
+
+# Axis settings
+ax.set_xlim(left=0)
+ax.set_ylim(top=1)
+
+# Whole numbers only on x-axis
+ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+
+
+# Set window title (popup name)
+fig.canvas.manager.set_window_title(filename)
+
+fig.savefig(filename, bbox_inches="tight", dpi=300)
+plt.show()
 
 
 print(
@@ -158,11 +211,17 @@ Please see \"{OUTPUT_FOLDER}/pcaobj.txt\" for the elements of the PCA model.
 
 title = input("Title for score scatter plot: ").title()
 print()
-print(f"Options: {sample_df.columns}\n")
+
+options = []
+for i in sample_df.columns:
+    options.append(i)
+options.append("none")
+
+print(f"Options: {options}\n")
 colorby = input("Color score scatter plot by: ").lower()
 print()
 
-if colorby not in sample_df.columns:
+if colorby not in options:
     sys.exit("Column does not exist. Cannot colour by this parameter.")
 
 first_PC = int(input("Number of first Principle Component: "))
@@ -179,17 +238,33 @@ print()
 if second_PC == first_PC:
     sys.exit("Second Principle Component cannot equal the first.")
 
-pp.score_scatter(
-    pcaobj,
-    [first_PC, second_PC],
-    addtitle=f"{title} coloured by {colorby.capitalize()} with {principle_components} Principle Components",
-    CLASSID=sample_df,
-    colorby=colorby,
-    filename=f"{title}_{colorby.capitalize()}_{principle_components} PCs_PC{first_PC} - PC{second_PC}",
-)
+if colorby == "none":
+    TITLE = f"{title} with {principle_components} Principle Components"
+    FILENAME = f"{title}_{principle_components} PCs_PC{first_PC} - PC{second_PC}"
+
+    pp.score_scatter(
+        pcaobj,
+        [first_PC, second_PC],
+        addtitle=TITLE,
+        filename=FILENAME,
+    )
+
+
+else:
+    TITLE = f"{title} coloured by {colorby.capitalize()} with {principle_components} Principle Components"
+    FILENAME = f"{title}_{colorby.capitalize()}_{principle_components} PCs_PC{first_PC} - PC{second_PC}"
+
+    pp.score_scatter(
+        pcaobj,
+        [first_PC, second_PC],
+        addtitle=TITLE,
+        CLASSID=sample_df,
+        colorby=colorby,
+        filename=FILENAME,
+    )
 
 pp.diagnostics(
     pcaobj,
-    addtitle=f"{title} coloured by {colorby.capitalize()} with {principle_components} Principle Components",
-    filename=f"{title}_{colorby.capitalize()}_{principle_components} PCs_PC{first_PC} - PC{second_PC}",
+    addtitle=TITLE,
+    filename=FILENAME,
 )
