@@ -112,6 +112,7 @@ class Sample:
 
     def __init__(self, filename: str, spectrum):
 
+        self.position = "Centre"
         self.drug = "PCM"
         self.well = "N/A"
         self.polymer = "N/A"
@@ -153,6 +154,9 @@ class Sample:
                 c = part.removesuffix("mgml")
                 c = int(c)
                 self.concentration = c
+            
+            if part == "edge":
+                self.position = "Edge"
 
         # Assign polymer, drug loading, and polymer loading to each sample
         match self.plate:
@@ -181,4 +185,4 @@ class Sample:
         if self.well == "Glass":
             return "Glass reference"
         else:
-            return f"Sample {self.well} on plate #{self.plate} at concentration {self.concentration} mg/mL {self.drug}/{self.polymer} {self.drug_loading}%/{self.polymer_loading}% "
+            return f"Sample {self.well} ({self.position.lower()}) on plate #{self.plate} at concentration {self.concentration} mg/mL {self.drug}/{self.polymer} {self.drug_loading}%/{self.polymer_loading}% "
