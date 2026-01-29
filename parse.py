@@ -1,7 +1,8 @@
 import pathlib
 import sys
 
-from filter import MACBOOK_URL, ANALYSIS_FOLDER, sort_files
+from settings import MACBOOK_URL, ANALYSIS_FOLDER
+from sort import sort_files
 
 # =========================================================================
 # Parse all files that end with "_multiwell.txt" and ignore all other files
@@ -26,8 +27,7 @@ def parse():
     for file in files:
 
         if "_multiwell.txt" not in file:
-            # If you want to see which files have not been parsed
-            # print(f"{file} was not parsed")
+            print(f"{file} was not parsed")
             continue
 
         plate_num, plate_conc = (
