@@ -1,25 +1,21 @@
 import matplotlib.pyplot as plt
 import ramanspy as rp
 
-import sys
-import pathlib
-import re
-
 from contextlib import redirect_stdout, redirect_stderr
 
 from filter import (
     ROWS_TO_REMOVE,
     COLS_TO_REMOVE,
     MACBOOK_URL,
-    ANALYSIS_FOLDER,
     OUTPUT_FOLDER,
     WAVENUMBER_RANGE,
     sort_files,
 )
+from matplotlib.ticker import MaxNLocator
 from sample import Sample
 
 
-# =======================
+# ========================
 # Visualising the spectra
 # ========================
 
@@ -82,3 +78,48 @@ def display_spectra(files, title):
         f'Please see "{OUTPUT_FOLDER}/spectra_samples.txt" for a list of the samples displayed.'
     )
     print()
+
+
+# ====================================================
+# Plot number of principle components against sum(R2X)
+# ====================================================
+
+def display_PCs_R2X(x_axis, y_axis):
+
+    if len(x_axis) != len(y_axis):
+        raise ValueError("x and y must be the same length")
+
+    filename = f"PC - sum(r2x)_{len(x_axis)} PCs.png"
+
+    # Plot PCs vs sum(R2X) as a line graph
+    fig, ax = plt.subplots()
+    ax.plot(x_axis, y_axis)
+
+    # Line + points in bold
+    ax.plot(
+        x_axis,
+        y_axis,
+        marker="o",
+        linestyle="-",
+        linewidth=1.5,
+        markersize=4,
+        markeredgewidth=2,
+    )
+
+    ax.set_xlabel("Principal Components")
+    ax.set_ylabel("Sum(r2x)")
+    ax.set_title("Principal Components vs Sum(r2x)")
+
+    # Axis settings
+    ax.set_xlim(left=0)
+    ax.set_ylim(top=1)
+
+    # Whole numbers only on x-axis
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+
+
+    # Set window title (popup name)
+    fig.canvas.manager.set_window_title(filename)
+
+    fig.savefig(filename, bbox_inches="tight", dpi=300)
+    plt.show()
