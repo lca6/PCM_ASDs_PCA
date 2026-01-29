@@ -1,4 +1,4 @@
-from filter import ANALYSIS_FOLDER
+from settings import ANALYSIS_FOLDER
 
 plate1 = {
     "polymer": {
