@@ -10,9 +10,9 @@ The paper is available at [URL].
 
 ## Workflow
 1) Create a .env file with the line `ANALYSIS_FOLDER="analyse"`
-2) Copy the files from spectra_data/ that you want to analyse
-3) Paste the files into analyse/
-4) Type `python3 *.py` where * is the name of the file you want to run to analyse the data
+2) Copy the files from spectra_data/ that you want to analyse and paste them into analyse/
+3) Change any parameters you want in settings.py
+4) Type `python pca.py` to analyse the data
 
 ## spectra_data/
 A folder containing .txt files obtained from the HORIBA LabRAM Odyssey confocal Raman microscope.
