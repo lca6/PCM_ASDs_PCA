@@ -18,9 +18,14 @@ COLS_TO_REMOVE = []
 # Crop spectra => to not crop the spectrum: (None, None)
 WAVENUMBER_RANGE = (None, None)
 
+# ==================================================
+# Sort files alphabetically by plate number and well
+# ==================================================
+
 
 def sort_files(files):
 
+    # Remove glass reference - later we add back after sort
     glass_reference = False
 
     if f"{ANALYSIS_FOLDER}/glass_reference.txt" in files:
@@ -51,6 +56,7 @@ def sort_files(files):
             location = "(edge)" if edge_pattern.search(f) else "(centre)"
             sample_labels.append(f"{m.group(1)}{m.group(2)} {location}")
 
+    # Add back glass reference
     if glass_reference == True:
         sorted_files.append(f"{ANALYSIS_FOLDER}/glass_reference.txt")
         sample_labels.append("glass reference")
