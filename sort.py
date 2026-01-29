@@ -1,22 +1,5 @@
-from dotenv import load_dotenv
-from os import getenv
+from settings import ANALYSIS_FOLDER
 import re
-
-load_dotenv()
-
-MACBOOK_URL = getenv("MACBOOK_URL")
-ANALYSIS_FOLDER = getenv("ANALYSIS_FOLDER")
-OUTPUT_FOLDER = getenv("OUTPUT_FOLDER")
-
-
-# Filter samples by rows (e.g. "B")
-ROWS_TO_REMOVE = []
-
-# Filter samples by columns (e.g. 5)
-COLS_TO_REMOVE = []
-
-# Crop spectra => to not crop the spectrum: (None, None)
-WAVENUMBER_RANGE = (None, None)
 
 # ==================================================
 # Sort files alphabetically by plate number and well
