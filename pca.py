@@ -4,18 +4,24 @@ import ramanspy as rp
 import sys
 
 from contextlib import redirect_stdout, redirect_stderr
-from filter import (
-    ROWS_TO_REMOVE,
-    COLS_TO_REMOVE,
-    MACBOOK_URL,
-    OUTPUT_FOLDER,
-    WAVENUMBER_RANGE,
-)
+
 from parse import parse
 from pprint import pprint
 from pyphi import pyphi as phi
 from pyphi import pyphi_plots as pp
 from sample import Sample
+
+from settings import (
+    ROWS_TO_REMOVE,
+    COLS_TO_REMOVE,
+    MACBOOK_URL,
+    OUTPUT_FOLDER,
+    WAVENUMBER_RANGE,
+    SAVGOL_WINDOW,
+    SAVGOL_POLYNOMIAL,
+    SAVGOL_DERIVATIVE,
+)
+
 from spectra import display_spectra, display_PCs_R2X
 
 # Parse any multiwell files in the analyse/ folder
@@ -24,8 +30,19 @@ files, sample_labels = parse()
 title = input("Data analysed: ").title()
 print()
 
+i = ""
+while i not in ["Y", "N"]:
+    i = input("Savitzky-Golay (Y/N): ").capitalize()
+    print()
+
+if i == "Y":
+    savgol = True
+elif i == "N":
+    savgol = False
+
+
 # Display the spectra
-display_spectra(files, title)
+display_spectra(files, title, savgol)
 
 dataframes = []
 dicts = []
@@ -100,6 +117,18 @@ for file in files:
 
 spectral_df = pd.concat(dataframes)
 
+# =============
+# Preprocessing
+# =============
+
+if savgol is True:
+    spectral_df = phi.spectra_savgol(
+        SAVGOL_WINDOW, SAVGOL_DERIVATIVE, SAVGOL_POLYNOMIAL, spectral_df
+    )
+    print("Savitzky-Golay filter applied")
+    print()
+
+
 sample_df = pd.DataFrame(dicts)
 
 with open(f"{OUTPUT_FOLDER}/dataframes.txt", "w") as f:
@@ -126,9 +155,15 @@ print()
 
 x = [x for x in range(1, num_pcs + 1)]
 
+cross_val = int(input("% of data you would like to remove per round of PCA: "))
+print()
+
+if cross_val > 100 or cross_val < 0:
+    sys.exit("cross_val must be an integer between 0 and 100")
+
 with open(f"{OUTPUT_FOLDER}/diagnostics.txt", "w") as f:
     with redirect_stdout(f), redirect_stderr(f):
-        pcaobj = phi.pca(spectral_df, num_pcs)
+        pcaobj = phi.pca(spectral_df, num_pcs, cross_val=cross_val)
 
 
 with open(f"{OUTPUT_FOLDER}/pcaobj.txt", "w") as f:
@@ -199,7 +234,9 @@ if colorby == "none":
 
 else:
     TITLE = f"{title} coloured by {colorby.capitalize()} with {num_pcs} Principle Components"
-    FILENAME = f"{title}_{colorby.capitalize()}_{num_pcs} PCs_PC{first_PC} - PC{second_PC}"
+    FILENAME = (
+        f"{title}_{colorby.capitalize()}_{num_pcs} PCs_PC{first_PC} - PC{second_PC}"
+    )
 
     pp.score_scatter(
         pcaobj,
@@ -211,7 +248,11 @@ else:
     )
 
 pp.diagnostics(
-    pcaobj,
-    addtitle=TITLE,
-    filename=FILENAME,
+    pcaobj, addtitle=TITLE, filename=FILENAME, score_plot_xydim=[first_PC, second_PC]
 )
+
+pp.r2pv()
+
+phi.hott2(pcaobj)
+
+phi.spe(pcaobj)

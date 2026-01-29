@@ -3,29 +3,33 @@ import ramanspy as rp
 
 from contextlib import redirect_stdout, redirect_stderr
 
-from filter import (
+from matplotlib.ticker import MaxNLocator
+from sample import Sample
+
+from settings import (
     ROWS_TO_REMOVE,
     COLS_TO_REMOVE,
     MACBOOK_URL,
     OUTPUT_FOLDER,
     WAVENUMBER_RANGE,
-    sort_files,
+    SAVGOL_WINDOW,
+    SAVGOL_POLYNOMIAL,
+    SAVGOL_DERIVATIVE,
 )
-from matplotlib.ticker import MaxNLocator
-from sample import Sample
 
+from sort import sort_files
 
 # ========================
 # Visualising the spectra
 # ========================
 
 
-def display_spectra(files, title):
+def display_spectra(files, title, savgol):
+
+    TITLE = title
+    filename = f"raman_spectrum_{title}"
 
     files, sample_labels = sort_files(files)
-
-    plate = []
-    spectra_to_visualise = []
 
     i = ""
     while i not in ["Y", "N"]:
@@ -36,6 +40,24 @@ def display_spectra(files, title):
         sample_labels = sample_labels
     elif i == "N":
         sample_labels = None
+
+    pipeline = []
+
+    if savgol is True:
+        pipeline.append(
+            rp.preprocessing.denoise.SavGol(
+                window_length=SAVGOL_WINDOW,
+                polyorder=SAVGOL_POLYNOMIAL,
+                deriv=SAVGOL_DERIVATIVE,
+            )
+        )
+        TITLE = title + f" with Savitzky-Golay filter"
+        filename += f"_savgol_win{SAVGOL_WINDOW}_poly{SAVGOL_POLYNOMIAL}_deriv{SAVGOL_DERIVATIVE}"
+
+    preprocessing_pipeline = rp.preprocessing.Pipeline(pipeline)
+
+    plate = []
+    spectra_to_visualise = []
 
     for file in files:
 
@@ -56,7 +78,10 @@ def display_spectra(files, title):
         cropper = rp.preprocessing.misc.Cropper(region=WAVENUMBER_RANGE)
         spectrum = cropper.apply(sample.spectrum)
 
-        spectra_to_visualise.append(spectrum)
+        # Preprocess the spectrum
+        preprocessed_spectrum = preprocessing_pipeline.apply(spectrum)
+
+        spectra_to_visualise.append(preprocessed_spectrum)
 
     # Prints samples to spectra_samples.txt
     with open(f"{OUTPUT_FOLDER}/spectra_samples.txt", "w") as f:
@@ -68,10 +93,10 @@ def display_spectra(files, title):
         spectra_to_visualise,
         label=sample_labels,
         plot_type="single",
-        title="Raman spectrum - " + title,
+        title=TITLE,
     )
 
-    plt.savefig(f"raman_spectrum_{title}")
+    plt.savefig(filename)
     plt.show()
 
     print(
@@ -83,6 +108,7 @@ def display_spectra(files, title):
 # ====================================================
 # Plot number of principle components against sum(R2X)
 # ====================================================
+
 
 def display_PCs_R2X(x_axis, y_axis):
 
@@ -116,7 +142,6 @@ def display_PCs_R2X(x_axis, y_axis):
 
     # Whole numbers only on x-axis
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-
 
     # Set window title (popup name)
     fig.canvas.manager.set_window_title(filename)
