@@ -7,14 +7,16 @@ from matplotlib.ticker import MaxNLocator
 from sample import Sample
 
 from settings import (
-    ROWS_TO_REMOVE,
     COLS_TO_REMOVE,
     MACBOOK_URL,
     OUTPUT_FOLDER,
-    WAVENUMBER_RANGE,
-    SAVGOL_WINDOW,
-    SAVGOL_POLYNOMIAL,
+    ROWS_TO_REMOVE,
+    SAMPLE_LABELS,
+    SAVGOL,
     SAVGOL_DERIVATIVE,
+    SAVGOL_POLYNOMIAL,
+    SAVGOL_WINDOW,
+    WAVENUMBER_RANGE,
 )
 
 from sort import sort_files
@@ -24,26 +26,22 @@ from sort import sort_files
 # ========================
 
 
-def display_spectra(files, title, savgol):
+def display_spectra(files, title):
 
-    TITLE = title
+    title = title.title()
+
     filename = f"raman_spectrum_{title}"
 
     files, sample_labels = sort_files(files)
 
-    i = ""
-    while i not in ["Y", "N"]:
-        i = input("Display sample labels (Y/N): ").capitalize()
-        print()
-
-    if i == "Y":
+    if SAMPLE_LABELS is True:
         sample_labels = sample_labels
-    elif i == "N":
+    elif SAMPLE_LABELS is False:
         sample_labels = None
 
     pipeline = []
 
-    if savgol is True:
+    if SAVGOL is True:
         pipeline.append(
             rp.preprocessing.denoise.SavGol(
                 window_length=SAVGOL_WINDOW,
@@ -51,7 +49,7 @@ def display_spectra(files, title, savgol):
                 deriv=SAVGOL_DERIVATIVE,
             )
         )
-        TITLE = title + f" with Savitzky-Golay filter"
+        title = title + f" with Savitzky-Golay filter"
         filename += f"_savgol_win{SAVGOL_WINDOW}_poly{SAVGOL_POLYNOMIAL}_deriv{SAVGOL_DERIVATIVE}"
 
     preprocessing_pipeline = rp.preprocessing.Pipeline(pipeline)
@@ -93,7 +91,7 @@ def display_spectra(files, title, savgol):
         spectra_to_visualise,
         label=sample_labels,
         plot_type="single",
-        title=TITLE,
+        title=title,
     )
 
     plt.savefig(filename)

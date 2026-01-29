@@ -3,7 +3,7 @@ import pandas as pd
 import ramanspy as rp
 import sys
 
-from contextlib import redirect_stdout, redirect_stderr
+from contextlib import redirect_stderr, redirect_stdout
 
 from parse import parse
 from pprint import pprint
@@ -12,37 +12,34 @@ from pyphi import pyphi_plots as pp
 from sample import Sample
 
 from settings import (
-    ROWS_TO_REMOVE,
+    COLORBY,
     COLS_TO_REMOVE,
+    CROSS_VAL,
+    DISPLAY_DIAGNOSTICS,
+    DISPLAY_PCs_R2X,
+    DISPLAY_SCORE_SCATTER,
+    DISPLAY_SPECTRA,
+    FIRST_PC,
     MACBOOK_URL,
+    NAME,
+    NUM_PCS,
     OUTPUT_FOLDER,
-    WAVENUMBER_RANGE,
-    SAVGOL_WINDOW,
-    SAVGOL_POLYNOMIAL,
+    ROWS_TO_REMOVE,
+    SAVGOL,
     SAVGOL_DERIVATIVE,
+    SAVGOL_POLYNOMIAL,
+    SAVGOL_WINDOW,
+    SECOND_PC,
+    WAVENUMBER_RANGE,
 )
 
-from spectra import display_spectra, display_PCs_R2X
+from spectra import display_PCs_R2X, display_spectra
 
 # Parse any multiwell files in the analyse/ folder
 files, sample_labels = parse()
 
-title = input("Data analysed: ").title()
-print()
-
-i = ""
-while i not in ["Y", "N"]:
-    i = input("Savitzky-Golay (Y/N): ").capitalize()
-    print()
-
-if i == "Y":
-    savgol = True
-elif i == "N":
-    savgol = False
-
-
-# Display the spectra
-display_spectra(files, title, savgol)
+if DISPLAY_SPECTRA is True:
+    display_spectra(files, NAME)
 
 dataframes = []
 dicts = []
@@ -121,7 +118,8 @@ spectral_df = pd.concat(dataframes)
 # Preprocessing
 # =============
 
-if savgol is True:
+
+if SAVGOL is True:
     spectral_df = phi.spectra_savgol(
         SAVGOL_WINDOW, SAVGOL_DERIVATIVE, SAVGOL_POLYNOMIAL, spectral_df
     )
@@ -150,20 +148,14 @@ with open(f"{OUTPUT_FOLDER}/dataframes.txt", "w") as f:
 # Principle Component Analysis
 # ============================
 
-num_pcs = int(input("Number of Principle Components: "))
-print()
+x = [x for x in range(1, NUM_PCS + 1)]
 
-x = [x for x in range(1, num_pcs + 1)]
-
-cross_val = int(input("% of data you would like to remove per round of PCA: "))
-print()
-
-if cross_val > 100 or cross_val < 0:
+if CROSS_VAL > 100 or CROSS_VAL < 0:
     sys.exit("cross_val must be an integer between 0 and 100")
 
 with open(f"{OUTPUT_FOLDER}/diagnostics.txt", "w") as f:
     with redirect_stdout(f), redirect_stderr(f):
-        pcaobj = phi.pca(spectral_df, num_pcs, cross_val=cross_val)
+        pcaobj = phi.pca(spectral_df, NUM_PCS, cross_val=CROSS_VAL)
 
 
 with open(f"{OUTPUT_FOLDER}/pcaobj.txt", "w") as f:
@@ -183,11 +175,11 @@ with open(f"{OUTPUT_FOLDER}/pcaobj.txt", "w") as f:
             sum_r2x += i
             y.append(round(sum_r2x, 3))
 
-# Display plot of PCs vs sum(R2X)
-display_PCs_R2X(x, y)
+if DISPLAY_PCs_R2X is True:
+    display_PCs_R2X(x, y)
 
 print(
-    f"""PCA successfully conducted with {num_pcs} Principle Components.\n
+    f"""PCA successfully conducted with {NUM_PCS} Principle Components.\n
 Please see \"{OUTPUT_FOLDER}/dataframes.txt\" for the dataframes analysed by PCA.\n
 Please see \"{OUTPUT_FOLDER}/diagnostics.txt\" for the diagnostics sent to the terminal.\n
 Please see \"{OUTPUT_FOLDER}/pcaobj.txt\" for the elements of the PCA model.
@@ -199,60 +191,48 @@ for i in sample_df.columns:
     options.append(i)
 options.append("none")
 
-print(f"Options: {options}\n")
-colorby = input("Colour plots by: ").lower()
-print()
+if COLORBY.lower() not in options:
+    sys.exit(f"Column does not exist. Cannot colour by this parameter. Options: {options}\n")
 
-if colorby not in options:
-    sys.exit("Column does not exist. Cannot colour by this parameter.")
-
-first_PC = int(input("Number of first Principle Component: "))
-print()
-
-if first_PC < 1 or first_PC > num_pcs:
+if FIRST_PC < 1 or FIRST_PC > NUM_PCS:
     sys.exit(
         "Principle Component must be greater than or equal to 1 and less than total number of Principle Components."
     )
 
-second_PC = int(input("Number of second Principle Component: "))
-print()
-
-if second_PC == first_PC:
+if SECOND_PC == FIRST_PC:
     sys.exit("Second Principle Component cannot equal the first.")
 
-if colorby == "none":
-    TITLE = f"{title} with {num_pcs} Principle Components"
-    FILENAME = f"{title}_{num_pcs} PCs_PC{first_PC} - PC{second_PC}"
-
-    pp.score_scatter(
-        pcaobj,
-        [first_PC, second_PC],
-        addtitle=TITLE,
-        filename=FILENAME,
-    )
-
-
+if COLORBY == "none":
+    TITLE = f"{NAME} with {NUM_PCS} Principle Components"
+    FILENAME = f"{NAME}_{NUM_PCS} PCs_PC{FIRST_PC} - PC{SECOND_PC}"
 else:
-    TITLE = f"{title} coloured by {colorby.capitalize()} with {num_pcs} Principle Components"
+    TITLE = f"{NAME} coloured by {COLORBY.capitalize()} with {NUM_PCS} Principle Components"
     FILENAME = (
-        f"{title}_{colorby.capitalize()}_{num_pcs} PCs_PC{first_PC} - PC{second_PC}"
+        f"{NAME}_{COLORBY.capitalize()}_{NUM_PCS} PCs_PC{FIRST_PC} - PC{SECOND_PC}"
     )
 
-    pp.score_scatter(
-        pcaobj,
-        [first_PC, second_PC],
-        addtitle=TITLE,
-        CLASSID=sample_df,
-        colorby=colorby,
-        filename=FILENAME,
+
+if DISPLAY_SCORE_SCATTER is True:
+    if COLORBY == "none":
+        pp.score_scatter(
+            pcaobj,
+            [FIRST_PC, SECOND_PC],
+            addtitle=TITLE,
+            filename=FILENAME,
+        )
+
+    else:
+        pp.score_scatter(
+            pcaobj,
+            [FIRST_PC, SECOND_PC],
+            addtitle=TITLE,
+            CLASSID=sample_df,
+            colorby=COLORBY,
+            filename=FILENAME,
+        )
+
+if DISPLAY_DIAGNOSTICS is True:
+    pp.diagnostics(
+        pcaobj, addtitle=TITLE, filename=FILENAME, score_plot_xydim=[FIRST_PC, SECOND_PC]
     )
 
-pp.diagnostics(
-    pcaobj, addtitle=TITLE, filename=FILENAME, score_plot_xydim=[first_PC, second_PC]
-)
-
-pp.r2pv()
-
-phi.hott2(pcaobj)
-
-phi.spe(pcaobj)

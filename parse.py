@@ -1,7 +1,7 @@
 import pathlib
 import sys
 
-from settings import MACBOOK_URL, ANALYSIS_FOLDER
+from settings import ANALYSIS_FOLDER, DISPLAY_PARSED_FILES, MACBOOK_URL
 from sort import sort_files
 
 # =========================================================================
@@ -27,7 +27,9 @@ def parse():
     for file in files:
 
         if "_multiwell.txt" not in file:
-            print(f"{file} was not parsed")
+
+            if DISPLAY_PARSED_FILES is True:
+                print(f"{file} was not parsed")
             continue
 
         plate_num, plate_conc = (
@@ -62,7 +64,8 @@ def parse():
         header, spectra = parse_multiwell_file(pathlib.Path(file))
         write_txt_file(header, spectra, pathlib.Path(output_dir), plate_num, plate_conc)
 
-        print(f"{file} was parsed")
+        if DISPLAY_PARSED_FILES is True:
+            print(f"{file} was parsed")
 
         # Remove multiwell file once parsed
         pathlib.Path(file).unlink()
