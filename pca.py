@@ -17,35 +17,27 @@ from filter import (
     sort_files,
 )
 from matplotlib.ticker import MaxNLocator
+from parse import parse
 from pprint import pprint
 from pyphi import pyphi as phi
 from pyphi import pyphi_batch as pb
 from pyphi import pyphi_plots as pp
 from sample import Sample
+from spectra import display_spectra
 
-files = pathlib.Path(ANALYSIS_FOLDER)
-files = [str(x) for x in files.iterdir()]
+# Parse any multiwell files in the analyse/ folder
+files, sample_labels = parse()
 
+title = input("Data analysed: ").title()
+print()
 
-# Confirm samples have been provided
-try:
-    files[0]
-except IndexError:
-    sys.exit("No files provided")
-
-
-files, sample_labels = sort_files(files)
+# Display the spectra
+display_spectra(files, title)
 
 dataframes = []
 dicts = []
 
 for file in files:
-
-    with open(file, encoding="latin-1") as f:
-        text = f.read()
-
-    with open(file, "w", encoding="utf-8") as f:
-        f.write(text)
 
     spectrum = rp.load.labspec(f"{MACBOOK_URL}{file}")
 
@@ -68,11 +60,11 @@ for file in files:
             well=sample.well,
             row=sample.row,
             column=sample.col,
-            concentration=sample.concentration,
+            concentration=f"{sample.concentration} mg/mL",
             drug=sample.drug,
-            drug_loading=sample.drug_loading,
+            drug_loading=f"{sample.drug_loading} %",
             polymer=sample.polymer,
-            polymer_loading=sample.polymer_loading,
+            polymer_loading=f"{sample.polymer_loading} %",
             position=sample.position,
         )
     )
@@ -156,13 +148,15 @@ with open(f"{OUTPUT_FOLDER}/pcaobj.txt", "w") as f:
     for i in pcaobj["r2x"]:
 
         if np.isnan(i):
-            sys.exit(f"PCA not successful. Please check \"{OUTPUT_FOLDER}/pcaobj.txt\" for the elements of the PCA model.")
+            sys.exit(
+                f'PCA not successful. Please check "{OUTPUT_FOLDER}/pcaobj.txt" for the elements of the PCA model.'
+            )
         else:
             sum_r2x += i
             y.append(round(sum_r2x, 3))
 
 if len(x) != len(y):
-        raise ValueError("x and y must be the same length")
+    raise ValueError("x and y must be the same length")
 
 num_pcs = len(x)
 filename = f"PC - sum(r2x)_{num_pcs} PCs.png"
@@ -209,16 +203,13 @@ Please see \"{OUTPUT_FOLDER}/pcaobj.txt\" for the elements of the PCA model.
 """
 )
 
-title = input("Title for score scatter plot: ").title()
-print()
-
 options = []
 for i in sample_df.columns:
     options.append(i)
 options.append("none")
 
 print(f"Options: {options}\n")
-colorby = input("Color score scatter plot by: ").lower()
+colorby = input("Colour plots by: ").lower()
 print()
 
 if colorby not in options:

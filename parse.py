@@ -3,8 +3,13 @@ import sys
 
 from filter import MACBOOK_URL, ANALYSIS_FOLDER, sort_files
 
+# =========================================================================
+# Parse all files that end with "_multiwell.txt" and ignore all other files
+# Output individual spectra to .txt files
+# =========================================================================
 
-def main():
+
+def parse():
 
     files = pathlib.Path(ANALYSIS_FOLDER)
     files = [str(x) for x in files.iterdir()]
@@ -15,12 +20,14 @@ def main():
     except IndexError:
         sys.exit("No files provided")
 
+    # Sorts the order that the files are parsed
     files, _ = sort_files(files)
 
     for file in files:
 
         if "_multiwell.txt" not in file:
-            print(f"{file} was ignored")
+            # If you want to see which files have not been parsed
+            # print(f"{file} was not parsed")
             continue
 
         plate_num, plate_conc = (
@@ -43,6 +50,7 @@ def main():
         except TypeError:
             sys.exit("Plate concentration not found")
 
+        # Convert files from latin-1 to utf-8 for parsing
         with open(file, encoding="latin-1") as f:
             text = f.read()
 
@@ -52,12 +60,29 @@ def main():
         output_dir = f"{MACBOOK_URL}{ANALYSIS_FOLDER}/"
 
         header, spectra = parse_multiwell_file(pathlib.Path(file))
-        write_txt(header, spectra, pathlib.Path(output_dir), plate_num, plate_conc)
+        write_txt_file(header, spectra, pathlib.Path(output_dir), plate_num, plate_conc)
 
         print(f"{file} was parsed")
 
         # Remove multiwell file once parsed
         pathlib.Path(file).unlink()
+
+    files = pathlib.Path(ANALYSIS_FOLDER)
+    files = [str(x) for x in files.iterdir()]
+
+    # Sorts the order that the files are returned by the function
+    files, sample_labels = sort_files(files)
+    print()
+
+    # Convert files from latin-1 to utf-8 for visualising the spectra and for PCA
+    for file in files:
+        with open(file, encoding="latin-1") as f:
+            text = f.read()
+
+        with open(file, "w", encoding="utf-8") as f:
+            f.write(text)
+
+    return files, sample_labels
 
 
 # =====================
@@ -118,7 +143,7 @@ def parse_multiwell_file(path):
 # =====================
 
 
-def write_txt(header, spectra, outdir, plate_number, plate_concentration):
+def write_txt_file(header, spectra, outdir, plate_number, plate_concentration):
     outdir.mkdir(parents=True, exist_ok=True)
 
     for row, col, x, y in spectra:
@@ -146,7 +171,3 @@ def rowcol_to_well(row, col):
     if not (1 <= row <= 26):
         raise ValueError(f"Row out of range: {row}")
     return f"{chr(64 + row)}{col}"
-
-
-if __name__ == "__main__":
-    main()
