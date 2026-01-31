@@ -2308,16 +2308,34 @@ def spectra_savgol(ws,od,op,Dm):
         M:     Transformation Matrix for new vector samples
     '''
     if isinstance(Dm,pd.DataFrame):
-        x_columns=Dm.columns.tolist()
-        FirstElement=[x_columns[0]]
-        x_columns=x_columns[1:]
-        FirstElement.extend(x_columns[ws:-ws])
-        x_values= Dm.values
-        Col1= Dm.values[:,0].tolist()
-        Col1=np.reshape(Col1,(-1,1))
+
+        # preserve structure
+        original_columns = Dm.columns.tolist()
+        original_index = Dm.index
+        original_index_name = Dm.index.name
+
+        # column trimming
+        first_col = original_columns[0]
+        trimmed_columns = original_columns[1:][ws:-ws]
+        new_columns = [first_col] + trimmed_columns
+
+        # extract values
+        x_values = Dm.values
+        col1= x_values[:,0].reshape(-1,1)
+
         aux, M = spectra_savgol(ws,od,op,x_values[:,1:].astype(float))
-        data_=np.hstack((Col1,aux))
-        xpd=pd.DataFrame(data=data_,columns=FirstElement)
+
+        data_ = np.hstack((col1,aux))
+
+        # preserve both columns and index
+        xpd = pd.DataFrame(
+            data=data_,
+            columns=new_columns,
+            index=original_index,
+            )
+
+        xpd.index.name = original_index_name
+
         return xpd,M
     else:
         if Dm.ndim==1: 
