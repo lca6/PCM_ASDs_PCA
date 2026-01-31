@@ -2270,10 +2270,27 @@ def spectra_snv (x):
     '''
     
     if isinstance(x,pd.DataFrame):
-        x_columns=x.columns
-        x_values= x.values
+
+        # Preserve structure
+        original_columns = x.columns
+        original_index = x.index
+        original_index_name = x.index.name
+
+        # Extract values
+        x_values= x.values.copy()
+
+        # Apply SNV only to spectral columns (exclude first column)
         x_values[:,1:] = spectra_snv(x_values[:,1:].astype(float))
-        xpd=pd.DataFrame(x_values,columns=x_columns)
+
+        # Rebuild dataframe with identical structure
+        xpd = pd.DataFrame(
+            data=x_values,
+            columns=original_columns,
+            index=original_index,
+        )
+
+        xpd.index.name = original_index_name
+
         return xpd
     else:
         if x.ndim ==2:
