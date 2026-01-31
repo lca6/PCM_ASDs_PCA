@@ -1,25 +1,133 @@
+import json
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import pathlib
+import pyphi.pyphi_plots as pp
 import ramanspy as rp
-
-from contextlib import redirect_stdout, redirect_stderr
+import shutil
+import sys
 
 from matplotlib.ticker import MaxNLocator
+
 from sample import Sample
 
 from settings import (
+    COLORBY,
     COLS_TO_REMOVE,
+    DISPLAY_DIAGNOSTICS,
+    DISPLAY_PCs_R2X, 
+    DISPLAY_SCORE_SCATTER,
+    DISPLAY_SPECTRA,
+    FIRST_PC,
     MACBOOK_URL,
-    OUTPUT_FOLDER,
+    NAME,
+    NUM_PCS,
+    PCA_OUTPUT,
     ROWS_TO_REMOVE,
     SAMPLE_LABELS,
-    SAVGOL,
+    PREPROCESS_WITH_SAVGOL,
     SAVGOL_DERIVATIVE,
     SAVGOL_POLYNOMIAL,
     SAVGOL_WINDOW,
+    SECOND_PC,
+    SPECTRA_OUTPUT,
     WAVENUMBER_RANGE,
 )
 
 from sort import sort_files
+
+
+def main():
+
+    # Read pcaobj from npy file
+    pcaobj = np.load(f"{PCA_OUTPUT}/pcaobj_not_viewable.npy", allow_pickle=True).item()
+
+    if DISPLAY_SPECTRA is True:
+
+        # Read parsed_files from txt file
+        with open(f"{PCA_OUTPUT}/parsed_files.txt") as f:
+            parsed_files = json.load(f)
+
+        display_spectra(parsed_files, NAME)
+
+    if DISPLAY_PCs_R2X is True:
+
+        x = [x for x in range(1, NUM_PCS + 1)]
+
+        y = []
+        sum_r2x = 0
+
+        for i in pcaobj["r2x"]:
+            sum_r2x += i
+            y.append(round(sum_r2x, 3))
+
+        display_PCs_R2X(x, y)
+
+    if DISPLAY_SCORE_SCATTER is True:
+
+        sample_df = pd.read_pickle(f"{PCA_OUTPUT}/sample_df_not_viewable.pkl")
+
+        options = []
+        for i in sample_df.columns:
+            options.append(i)
+        options.append("none")
+
+        if COLORBY.lower() not in options:
+            sys.exit(
+                f"Column does not exist. Cannot colour by this parameter. Options: {options}\n"
+            )
+
+        if FIRST_PC < 1 or FIRST_PC > NUM_PCS:
+            sys.exit(
+                "Principle Component must be greater than or equal to 1 and less than total number of Principle Components."
+            )
+
+        if SECOND_PC == FIRST_PC:
+            sys.exit("Second Principle Component cannot equal the first.")
+
+        if COLORBY == "none":
+            TITLE = f"{NAME} with {NUM_PCS} Principle Components"
+            FILENAME = f"{NAME}_{NUM_PCS} PCs_PC{FIRST_PC} - PC{SECOND_PC}"
+        else:
+            TITLE = f"{NAME} coloured by {COLORBY.capitalize()} with {NUM_PCS} Principle Components"
+            FILENAME = f"{NAME}_{COLORBY.capitalize()}_{NUM_PCS} PCs_PC{FIRST_PC} - PC{SECOND_PC}"
+
+        if COLORBY == "none":
+            pp.score_scatter(
+                pcaobj,
+                [FIRST_PC, SECOND_PC],
+                addtitle=TITLE,
+                filename=FILENAME,
+            )
+
+        else:
+            pp.score_scatter(
+                pcaobj,
+                [FIRST_PC, SECOND_PC],
+                addtitle=TITLE,
+                CLASSID=sample_df,
+                colorby=COLORBY,
+                filename=FILENAME,
+            )
+
+        if DISPLAY_DIAGNOSTICS is True:
+
+            pp.diagnostics(
+                pcaobj,
+                addtitle=TITLE,
+                filename=FILENAME,
+                score_plot_xydim=[FIRST_PC, SECOND_PC],
+            )
+
+    src_dir = pathlib.Path(".")
+    dst_dir = pathlib.Path(f"{SPECTRA_OUTPUT}")
+    dst_dir.mkdir(parents=True, exist_ok=True)
+
+    for html_file in src_dir.glob("*.html"):
+        shutil.move(html_file, dst_dir / html_file.name)
+
+
 
 # ========================
 # Visualising the spectra
@@ -41,7 +149,7 @@ def display_spectra(files, title):
 
     pipeline = []
 
-    if SAVGOL is True:
+    if PREPROCESS_WITH_SAVGOL is True:
         pipeline.append(
             rp.preprocessing.denoise.SavGol(
                 window_length=SAVGOL_WINDOW,
@@ -82,10 +190,9 @@ def display_spectra(files, title):
         spectra_to_visualise.append(preprocessed_spectrum)
 
     # Prints samples to spectra_samples.txt
-    with open(f"{OUTPUT_FOLDER}/spectra_samples.txt", "w") as f:
-        with redirect_stdout(f), redirect_stderr(f):
-            for sample in plate:
-                print(sample)
+    with open(f"{SPECTRA_OUTPUT}/spectra_samples.txt", "w") as f:
+        for sample in plate:
+            print(sample, file=f)
 
     rp.plot.spectra(
         spectra_to_visualise,
@@ -94,11 +201,11 @@ def display_spectra(files, title):
         title=title,
     )
 
-    plt.savefig(filename)
+    plt.savefig(f"{SPECTRA_OUTPUT}/{filename}", bbox_inches="tight", dpi=300)
     plt.show()
 
     print(
-        f'Please see "{OUTPUT_FOLDER}/spectra_samples.txt" for a list of the samples displayed.'
+        f'Please see "{SPECTRA_OUTPUT}/spectra_samples.txt" for a list of the samples displayed.'
     )
     print()
 
@@ -113,7 +220,11 @@ def display_PCs_R2X(x_axis, y_axis):
     if len(x_axis) != len(y_axis):
         raise ValueError("x and y must be the same length")
 
-    filename = f"PC - sum(r2x)_{len(x_axis)} PCs.png"
+    num_pcs = len(x_axis)
+
+    sum_r2 = round(y_axis[num_pcs - 1] * 100, 1)
+
+    filename = f"PC - sum(r2x)_{num_pcs} PCs_{sum_r2}%.png"
 
     # Plot PCs vs sum(R2X) as a line graph
     fig, ax = plt.subplots()
@@ -128,7 +239,18 @@ def display_PCs_R2X(x_axis, y_axis):
         linewidth=1.5,
         markersize=4,
         markeredgewidth=2,
+        color="black",
     )
+
+    for x, y in zip(x_axis, y_axis):
+        ax.annotate(
+            f"{y:.3f}",
+            (x, y),
+            textcoords="offset points",
+            xytext=(-10, 6),
+            ha="center",
+            fontsize=8,
+        )
 
     ax.set_xlabel("Principal Components")
     ax.set_ylabel("Sum(r2x)")
@@ -144,5 +266,9 @@ def display_PCs_R2X(x_axis, y_axis):
     # Set window title (popup name)
     fig.canvas.manager.set_window_title(filename)
 
-    fig.savefig(filename, bbox_inches="tight", dpi=300)
+    fig.savefig(f"{SPECTRA_OUTPUT}/{filename}", bbox_inches="tight", dpi=300)
     plt.show()
+
+
+if __name__ == "__main__":
+    main()
