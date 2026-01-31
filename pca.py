@@ -19,6 +19,7 @@ from settings import (
     PCA_OUTPUT,
     ROWS_TO_REMOVE,
     PREPROCESS_WITH_SAVGOL,
+    PREPROCESS_WITH_SNV,
     SAVGOL_DERIVATIVE,
     SAVGOL_POLYNOMIAL,
     SAVGOL_WINDOW,
@@ -121,24 +122,29 @@ if PREPROCESS_WITH_SAVGOL is True:
     print()
 
 
+if PREPROCESS_WITH_SNV is True:
+    spectral_df = phi.spectra_snv(spectral_df)
+    print("Standard Normal Variate applied.")
+    print()
+
+
 sample_df = pd.DataFrame(dicts)
 
 with open(f"{PCA_OUTPUT}/dataframes.txt", "w") as f:
-    with redirect_stdout(f), redirect_stderr(f):
-        with pd.option_context(
-            "display.max_rows",
-            None,
-            "display.max_columns",
-            None,
-            "display.max_colwidth",
-            None,
-            "display.width",
-            None,
-        ):
-            print(spectral_df)
-            print()
-            print()
-            print(sample_df)
+    with pd.option_context(
+        "display.max_rows",
+        None,
+        "display.max_columns",
+        None,
+        "display.max_colwidth",
+        None,
+        "display.width",
+        None,
+    ):
+        print(spectral_df, file=f)
+        print(file=f)
+        print(file=f)
+        print(sample_df, file=f)
 
 # Save spectral_df to txt file (binary format)
 spectral_df.to_pickle(f"{PCA_OUTPUT}/spectral_df_not_viewable.pkl")
@@ -167,6 +173,7 @@ with open(f"{PCA_OUTPUT}/pcaobj_{NUM_PCS} PCs_crossval{CROSS_VAL}.txt", "w") as 
                 print(f"Principle Components: {NUM_PCS} PCs", file=f)
                 print(f"Cross_val: {CROSS_VAL}%", file=f)
                 print(f"Savitzky-Golay: {PREPROCESS_WITH_SAVGOL}", file=f)
+                print(f"Standard Normal Variate: {PREPROCESS_WITH_SNV}", file=f)
                 pprint(pcaobj, stream=f)
 
 # Confirm PCA ran successfully

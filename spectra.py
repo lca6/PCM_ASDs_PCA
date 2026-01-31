@@ -7,6 +7,7 @@ import pyphi.pyphi_plots as pp
 import ramanspy as rp
 import shutil
 import sys
+import time
 
 from matplotlib.ticker import MaxNLocator
 
@@ -27,6 +28,7 @@ from settings import (
     ROWS_TO_REMOVE,
     SAMPLE_LABELS,
     PREPROCESS_WITH_SAVGOL,
+    PREPROCESS_WITH_SNV,
     SAVGOL_DERIVATIVE,
     SAVGOL_POLYNOMIAL,
     SAVGOL_WINDOW,
@@ -120,6 +122,10 @@ def main():
                 score_plot_xydim=[FIRST_PC, SECOND_PC],
             )
 
+    # Wait for plots to load in browser
+    time.sleep(5)
+
+    # Move html files to spectra_output
     src_dir = pathlib.Path(".")
     dst_dir = pathlib.Path(f"{SPECTRA_OUTPUT}")
     dst_dir.mkdir(parents=True, exist_ok=True)
@@ -157,8 +163,15 @@ def display_spectra(files, title):
                 deriv=SAVGOL_DERIVATIVE,
             )
         )
-        title = title + f" with Savitzky-Golay filter"
+        title = title + " + Savitzky-Golay filter"
         filename += f"_savgol_win{SAVGOL_WINDOW}_poly{SAVGOL_POLYNOMIAL}_deriv{SAVGOL_DERIVATIVE}"
+
+    if PREPROCESS_WITH_SNV is True:
+        pipeline.append(
+            rp.preprocessing.PreprocessingStep(standard_normal_variate)
+        )
+        title = title + " + Standard Normal Variate"
+        filename += "_snv"
 
     preprocessing_pipeline = rp.preprocessing.Pipeline(pipeline)
 
@@ -268,6 +281,24 @@ def display_PCs_R2X(x_axis, y_axis):
 
     fig.savefig(f"{SPECTRA_OUTPUT}/{filename}", bbox_inches="tight", dpi=300)
     plt.show()
+
+
+def standard_normal_variate(intensity_data, spectral_axis):
+    
+    intensity_data = np.asarray(intensity_data, dtype=float)
+
+    # If 1D, make it 2D with 1 row
+    if intensity_data.ndim == 1:
+        intensity_data = intensity_data.reshape(1, -1)
+
+    mean = intensity_data.mean(axis=1, keepdims=True)
+
+    std = intensity_data.std(axis=1, ddof=1, keepdims=True)
+
+    snv_intensity_data = (intensity_data - mean) / std
+
+    return snv_intensity_data, spectral_axis
+    
 
 
 if __name__ == "__main__":
