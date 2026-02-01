@@ -15,26 +15,17 @@ from sample import Sample
 
 from settings import (
     COLORBY,
-    COLS_TO_REMOVE,
     DISPLAY_DIAGNOSTICS,
-    DISPLAY_PCs_R2X, 
+    DISPLAY_PCs_R2X,
+    DISPLAY_SAMPLE_LABELS,
     DISPLAY_SCORE_SCATTER,
     DISPLAY_SPECTRA,
     FIRST_PC,
     MACBOOK_URL,
     NAME,
-    NUM_PCS,
     PCA_OUTPUT,
-    ROWS_TO_REMOVE,
-    SAMPLE_LABELS,
-    PREPROCESS_WITH_SAVGOL,
-    PREPROCESS_WITH_SNV,
-    SAVGOL_DERIVATIVE,
-    SAVGOL_POLYNOMIAL,
-    SAVGOL_WINDOW,
     SECOND_PC,
     SPECTRA_OUTPUT,
-    WAVENUMBER_RANGE,
 )
 
 from sort import sort_files
@@ -45,17 +36,21 @@ def main():
     # Read pcaobj from npy file
     pcaobj = np.load(f"{PCA_OUTPUT}/pcaobj_not_viewable.npy", allow_pickle=True).item()
 
+    with open(f"{PCA_OUTPUT}/pca_settings.json") as f:
+        settings = json.load(f)
+        num_pcs = settings["Principle Components"]
+
     if DISPLAY_SPECTRA is True:
 
         # Read parsed_files from txt file
-        with open(f"{PCA_OUTPUT}/parsed_files.txt") as f:
+        with open(f"{PCA_OUTPUT}/files_analysed.txt") as f:
             parsed_files = json.load(f)
 
         display_spectra(parsed_files, NAME)
 
     if DISPLAY_PCs_R2X is True:
 
-        x = [x for x in range(1, NUM_PCS + 1)]
+        x = [x for x in range(1, num_pcs + 1)]
 
         y = []
         sum_r2x = 0
@@ -80,7 +75,7 @@ def main():
                 f"Column does not exist. Cannot colour by this parameter. Options: {options}\n"
             )
 
-        if FIRST_PC < 1 or FIRST_PC > NUM_PCS:
+        if FIRST_PC < 1 or FIRST_PC > num_pcs:
             sys.exit(
                 "Principle Component must be greater than or equal to 1 and less than total number of Principle Components."
             )
@@ -89,36 +84,36 @@ def main():
             sys.exit("Second Principle Component cannot equal the first.")
 
         if COLORBY == "none":
-            TITLE = f"{NAME} with {NUM_PCS} Principle Components"
-            FILENAME = f"{NAME}_{NUM_PCS} PCs_PC{FIRST_PC} - PC{SECOND_PC}"
+            title = f"{NAME} with {num_pcs} Principle Components"
+            filename = f"{NAME}_{num_pcs} PCs_PC{FIRST_PC} - PC{SECOND_PC}"
         else:
-            TITLE = f"{NAME} coloured by {COLORBY.capitalize()} with {NUM_PCS} Principle Components"
-            FILENAME = f"{NAME}_{COLORBY.capitalize()}_{NUM_PCS} PCs_PC{FIRST_PC} - PC{SECOND_PC}"
+            title = f"{NAME} coloured by {COLORBY.capitalize()} with {num_pcs} Principle Components"
+            filename = f"{NAME}_{COLORBY.capitalize()}_{num_pcs} PCs_PC{FIRST_PC} - PC{SECOND_PC}"
 
         if COLORBY == "none":
             pp.score_scatter(
                 pcaobj,
                 [FIRST_PC, SECOND_PC],
-                addtitle=TITLE,
-                filename=FILENAME,
+                addtitle=title,
+                filename=filename,
             )
 
         else:
             pp.score_scatter(
                 pcaobj,
                 [FIRST_PC, SECOND_PC],
-                addtitle=TITLE,
+                addtitle=title,
                 CLASSID=sample_df,
                 colorby=COLORBY,
-                filename=FILENAME,
+                filename=filename,
             )
 
         if DISPLAY_DIAGNOSTICS is True:
 
             pp.diagnostics(
                 pcaobj,
-                addtitle=TITLE,
-                filename=FILENAME,
+                addtitle=title,
+                filename=filename,
                 score_plot_xydim=[FIRST_PC, SECOND_PC],
             )
 
@@ -148,32 +143,66 @@ def display_spectra(files, title):
 
     files, sample_labels = sort_files(files)
 
-    if SAMPLE_LABELS is True:
+    with open(f"{PCA_OUTPUT}/pca_settings.json") as f:
+        settings = json.load(f)
+        rows_to_remove = settings["Sample rows removed"]
+        cols_to_remove = settings["Sample columns removed"]
+        wavenumber_range = settings["Wavenumber range"]
+
+    filtered_sample_labels = []
+    for s in sample_labels:
+        row = s[0]
+        col = int(s[1:].split()[0])
+
+        if row not in rows_to_remove and col not in cols_to_remove:
+            filtered_sample_labels.append(s)
+
+    sample_labels = filtered_sample_labels
+
+    if DISPLAY_SAMPLE_LABELS is True:
         sample_labels = sample_labels
-    elif SAMPLE_LABELS is False:
+    elif DISPLAY_SAMPLE_LABELS is False:
         sample_labels = None
 
     pipeline = []
 
-    if PREPROCESS_WITH_SAVGOL is True:
+    # Extract preprocessing techniques conducted before PCA
+    with open(f"{PCA_OUTPUT}/pca_settings.json") as f:
+        settings = json.load(f)
+        preprocess_with_savgol = settings["Savitzky-Golay"]
+        preprocess_with_snv = settings["Standard Normal Variate"]
+
+    if preprocess_with_savgol is True:
+
+        with open(f"{PCA_OUTPUT}/pca_settings.json") as f:
+            settings = json.load(f)
+            savgol_window = settings["Savitzky-Golay Window"]
+            savgol_polynomial = settings["Savitzky-Golay Polynomial"]
+            savgol_derivative = settings["Savitzky-Golay Derivative"]
+
         pipeline.append(
             rp.preprocessing.denoise.SavGol(
-                window_length=SAVGOL_WINDOW,
-                polyorder=SAVGOL_POLYNOMIAL,
-                deriv=SAVGOL_DERIVATIVE,
+                window_length=savgol_window,
+                polyorder=savgol_polynomial,
+                deriv=savgol_derivative,
             )
         )
-        title = title + " + Savitzky-Golay filter"
-        filename += f"_savgol_win{SAVGOL_WINDOW}_poly{SAVGOL_POLYNOMIAL}_deriv{SAVGOL_DERIVATIVE}"
+        title += " + Savitzky-Golay filter"
+        filename += f"_savgol_win{savgol_window}_poly{savgol_polynomial}_deriv{savgol_derivative}"
 
-    if PREPROCESS_WITH_SNV is True:
+    if preprocess_with_snv is True:
         pipeline.append(
             rp.preprocessing.PreprocessingStep(standard_normal_variate)
         )
-        title = title + " + Standard Normal Variate"
+        title += " + Standard Normal Variate"
         filename += "_snv"
 
     preprocessing_pipeline = rp.preprocessing.Pipeline(pipeline)
+
+    if preprocess_with_savgol is False and preprocess_with_snv is False:
+        title += " (no preprocessing applied)"
+        filename += "_nopreprocessing"
+
 
     plate = []
     spectra_to_visualise = []
@@ -185,16 +214,16 @@ def display_spectra(files, title):
 
         sample = Sample(file, spectrum)
 
+        # Filter spectra to be visualised
+        if sample.row in rows_to_remove:
+            continue
+        elif sample.col in cols_to_remove:
+            continue
+
         plate.append(sample)
 
-        # Filter spectra to be visualised
-        if sample.row in ROWS_TO_REMOVE:
-            continue
-        elif sample.col in COLS_TO_REMOVE:
-            continue
-
         # Crop spectra
-        cropper = rp.preprocessing.misc.Cropper(region=WAVENUMBER_RANGE)
+        cropper = rp.preprocessing.misc.Cropper(region=wavenumber_range)
         spectrum = cropper.apply(sample.spectrum)
 
         # Preprocess the spectrum
