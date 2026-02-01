@@ -1,7 +1,9 @@
 import json
 import numpy as np
 import pandas as pd
+import pathlib
 import ramanspy as rp
+import shutil
 import sys
 
 from contextlib import redirect_stderr, redirect_stdout
@@ -27,13 +29,21 @@ from settings import (
     WAVENUMBER_RANGE,
 )
 
+# Moves files from pca_output to Bin
+folder = pathlib.Path(f"{MACBOOK_URL}/{PCA_OUTPUT}")
+trash = pathlib.Path.home() / ".Trash"
+
+for item in folder.iterdir():
+    if item.is_file():
+        shutil.move(str(item), trash / item.name)
+
 
 # Parse any multiwell files in the analyse/ folder
 parsed_files, _ = parse()
 
 # Save parsed_files to txt file
-with open(f"{PCA_OUTPUT}/parsed_files.txt", "w") as f:
-    json.dump(parsed_files, f)
+with open(f"{PCA_OUTPUT}/files_analysed.txt", "w") as f:
+    json.dump(parsed_files, f, indent=2)
 
 dataframes_2_and_3 = []
 dataframe_4 = []
@@ -129,11 +139,13 @@ for file in parsed_files:
 
 plates_2_and_3 = pd.concat(dataframes_2_and_3)
 
+# =====================================================================================================================================
 # NOTE: Plates 2 and 3 were collected with an accumulation time of 5s whereas plate 4 was collected with an accumulation time of 3s.
 # This means that the shift values for plate 4 are different to those of plates 2 and 3. Because plate 4's shifts only vary from plates
 # 2 and 3 by a maximum of 0.07 across the entire wavenumber range (please run 'python check.py' to confirm), the decision was made to
 # combine plate 4's data into the dataframe for PCA using the shift numbers from plates 2 and 3. This means that the shift numbers for
 # plate 4 have been disregarded. To avoid this error, accumulation time should be consistent across plates.
+# =====================================================================================================================================
 
 if dataframe_4 != []:
 
@@ -219,12 +231,29 @@ if CONDUCT_PCA is True:
 
             pcaobj = phi.pca(spectral_df, int(NUM_PCS), cross_val=int(CROSS_VAL))
 
-    with open(f"{PCA_OUTPUT}/pcaobj_{NUM_PCS} PCs_crossval{CROSS_VAL}.txt", "w") as f:
-        print(f"Principle Components: {NUM_PCS} PCs", file=f)
-        print(f"Cross_val: {CROSS_VAL}%", file=f)
-        print(f"Savitzky-Golay: {PREPROCESS_WITH_SAVGOL}", file=f)
-        print(f"Standard Normal Variate: {PREPROCESS_WITH_SNV}", file=f)
+    # Print pcaobj to file
+    with open(f"{PCA_OUTPUT}/pcaobj.txt", "w") as f:
         pprint(pcaobj, stream=f)
+
+    # Saves settings (from settings.py) at PCA runtime
+    with open(f"{PCA_OUTPUT}/pca_settings.json", "w") as f:
+        
+        settings = {}
+        settings["Principle Components"] = NUM_PCS
+        settings["Cross_val"] = CROSS_VAL
+        settings["Savitzky-Golay"] = PREPROCESS_WITH_SAVGOL
+
+        if PREPROCESS_WITH_SAVGOL is True:
+            settings["Savitzky-Golay Derivative"] = SAVGOL_DERIVATIVE
+            settings["Savitzky-Golay Polynomial"] = SAVGOL_POLYNOMIAL
+            settings["Savitzky-Golay Window"] = SAVGOL_WINDOW
+
+        settings["Standard Normal Variate"] = PREPROCESS_WITH_SNV
+        settings["Sample rows removed"] = ROWS_TO_REMOVE
+        settings["Sample columns removed"] = COLS_TO_REMOVE
+        settings["Wavenumber range"] = WAVENUMBER_RANGE
+
+        json.dump(settings, f, indent=2)
 
     # Confirm PCA ran successfully
     for i in pcaobj["r2x"]:
@@ -238,7 +267,16 @@ if CONDUCT_PCA is True:
     sys.exit(
         f"""PCA successfully conducted with {NUM_PCS} Principle Components, removing {CROSS_VAL}% of data per round.\n
     Please see \"{PCA_OUTPUT}/dataframes.txt\" for the dataframes analysed by PCA.\n
-    Please see \"{PCA_OUTPUT}/diagnostics.txt\" for the diagnostics sent to the terminal.\n
+    Please see \"{PCA_OUTPUT}/files_analysed.txt\" for files analysed.\n
+    Please see \"{PCA_OUTPUT}/pca_settings.json\" for the settings applied to the dataframes before PCA.\n
+    Please see \"{PCA_OUTPUT}/pca_terminal_output.txt\" for the diagnostics sent to the terminal.\n
     Please see \"{PCA_OUTPUT}/pcaobj.txt\" for the elements of the PCA model.
     """
     )
+
+elif CONDUCT_PCA is False:
+    sys.exit(f"""
+    Did not conduct PCA.\n
+    Please see \"{PCA_OUTPUT}/dataframes.txt\" for the dataframes created.\n
+    Please see \"{PCA_OUTPUT}/files_analysed.txt\" for files analysed.\n
+    """)
