@@ -1,4 +1,5 @@
 import pathlib
+import shutil
 import sys
 
 from settings import ANALYSIS_FOLDER, DISPLAY_PARSED_FILES, MACBOOK_URL
@@ -67,8 +68,9 @@ def parse():
         if DISPLAY_PARSED_FILES is True:
             print(f"{file} was parsed")
 
-        # Remove multiwell file once parsed
-        pathlib.Path(file).unlink()
+        # Move multiwell file to Bin once parsed
+        trash = pathlib.Path.home() / ".Trash"
+        shutil.move(str(file), trash / file.name)
 
     files = pathlib.Path(ANALYSIS_FOLDER)
     files = [str(x) for x in files.iterdir()]
