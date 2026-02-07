@@ -2340,7 +2340,7 @@ def spectra_savgol(ws,od,op,Dm):
         x_values = Dm.values
         col1= x_values[:,0].reshape(-1,1)
 
-        aux, M = spectra_savgol(ws,od,op,x_values[:,1:].astype(float))
+        aux, M = _spectra_savgol_array(ws,od,op,x_values[:,1:].astype(float))
 
         data_ = np.hstack((col1,aux))
 
@@ -2355,37 +2355,55 @@ def spectra_savgol(ws,od,op,Dm):
 
         return xpd,M
     else:
-        if Dm.ndim==1: 
-            l = Dm.shape[0]
+        return _spectra_savgol_array(ws, od, op, Dm)
+
+    
+def _spectra_savgol_array(ws, od, op, Dm):
+    if od > op:
+        raise ValueError("Derivative order (od) must be <= polynomial order (op)")
+
+    if Dm.ndim==1: 
+        l = Dm.shape[0]
+    else:
+        l = Dm.shape[1]
+    
+    x_vec=np.arange(-ws,ws+1)
+    x_vec=np.reshape(x_vec,(len(x_vec),1))
+
+    X = np.ones((2*ws+1,1))
+
+    for oo in np.arange(1,op+1):
+        X=np.hstack((X,x_vec**oo))
+
+    try:    
+        XtXiXt=np.linalg.inv(X.T @ X) @ X.T
+
+    except:
+        XtXiXt=np.linalg.pinv(X.T @ X) @ X.T
+
+    coeffs=XtXiXt[od,:] * factorial(od)
+    coeffs=np.reshape(coeffs,(1,len(coeffs)))
+
+    for i in np.arange(1,l-2*ws+1):
+        if i==1:
+            M=np.hstack((coeffs,np.zeros((1,l-2*ws-1))))
+
+        elif i < l-2*ws:
+            m_= np.hstack((np.zeros((1,i-1)), coeffs))
+            m_= np.hstack((m_,np.zeros((1,l-2*ws-1-i+1))))
+            M = np.vstack((M,m_))
+
         else:
-            l = Dm.shape[1]
+            m_=np.hstack((np.zeros((1,l-2*ws-1)),coeffs))
+            M = np.vstack((M,m_))
+
+    if Dm.ndim==1: 
+        Dm_sg=  M @ Dm
+
+    else:
+        Dm_sg= Dm @ M.T
         
-        x_vec=np.arange(-ws,ws+1)
-        x_vec=np.reshape(x_vec,(len(x_vec),1))
-        X = np.ones((2*ws+1,1))
-        for oo in np.arange(1,op+1):
-            X=np.hstack((X,x_vec**oo))
-        try:    
-            XtXiXt=np.linalg.inv(X.T @ X) @ X.T
-        except:
-            XtXiXt=np.linalg.pinv(X.T @ X) @ X.T
-        coeffs=XtXiXt[od,:] * factorial(od)
-        coeffs=np.reshape(coeffs,(1,len(coeffs)))
-        for i in np.arange(1,l-2*ws+1):
-            if i==1:
-                M=np.hstack((coeffs,np.zeros((1,l-2*ws-1))))
-            elif i < l-2*ws:
-                m_= np.hstack((np.zeros((1,i-1)), coeffs))
-                m_= np.hstack((m_,np.zeros((1,l-2*ws-1-i+1))))
-                M = np.vstack((M,m_))
-            else:
-                m_=np.hstack((np.zeros((1,l-2*ws-1)),coeffs))
-                M = np.vstack((M,m_))
-        if Dm.ndim==1: 
-            Dm_sg=  M @ Dm
-        else:
-            Dm_sg= Dm @ M.T
-        return Dm_sg,M
+    return Dm_sg,M
 
 def np2D2pyomo(arr,*,varids=False):
     """ Routine to convert a Numpy matrix in to a 2D dictionary for Pyomo
