@@ -11,15 +11,18 @@ from sample import Sample
 from settings import MACBOOK_URL, PCA_OUTPUT
 
 def main():
+
+    PLATE = 4
+
     # Parse any multiwell files in the analyse/ folder
     parsed_files, _ = parse()
 
     # Save parsed_files to txt file
     with open(f"{PCA_OUTPUT}/parsed_files.txt", "w") as f:
-        json.dump(parsed_files, f)
+        json.dump(parsed_files, f, indent=2)
 
     dataframes_2_and_3 = []
-    dataframe_4 = []
+    dataframe_PLATE = []
     dicts = []
 
     for file in parsed_files:
@@ -49,16 +52,16 @@ def main():
             df = pd.DataFrame(l)
             df = df.pivot(index="sample", columns="shift", values="intensity")
 
-            if sample.plate == 4:
-                dataframe_4.append(df)
+            if sample.plate == PLATE:
+                dataframe_PLATE.append(df)
             elif sample.plate in [2, 3]:
                 dataframes_2_and_3.append(df)
 
 
     plates_2_and_3 = pd.concat(dataframes_2_and_3)
-    plate_4 = pd.concat(dataframe_4)
+    plate_PLATE = pd.concat(dataframe_PLATE)
 
-    diff_between_plates = compare(plates_2_and_3.columns, plate_4.columns)
+    diff_between_plates = compare(plates_2_and_3.columns, plate_PLATE.columns)
 
     x = range(len(diff_between_plates))
     y = diff_between_plates.values
@@ -67,10 +70,10 @@ def main():
     plt.plot(x, y, marker='o', linestyle='-')
     plt.xlabel("Sample number")
     plt.ylabel("Shift difference")
-    plt.title("Shift difference between plate 4 and plates 2 and 3")
+    plt.title(f"Shift difference between plate {PLATE} and plates 2 and 3")
     plt.ylim(0, 0.1)
     plt.grid(True)
-    plt.savefig("difference_between_plate4_and_plates_2_and_3.png", format="png", bbox_inches="tight", dpi=300)
+    plt.savefig(f"difference_between_plate{PLATE}_and_plates_2_and_3.png", format="png", bbox_inches="tight", dpi=300)
     plt.show()
 
 
