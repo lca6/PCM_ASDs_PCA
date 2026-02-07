@@ -70,27 +70,34 @@ def main():
             options.append(i)
         options.append("none")
 
-        if COLORBY.lower() not in options:
+        colorby = COLORBY.lower()
+
+        if colorby not in options:
             sys.exit(
                 f"Column does not exist. Cannot colour by this parameter. Options: {options}\n"
             )
 
         if FIRST_PC < 1 or FIRST_PC > num_pcs:
             sys.exit(
-                "Principle Component must be greater than or equal to 1 and less than total number of Principle Components."
+                "First Principle Component must be greater than or equal to 1 and less than or equal to the total number of Principle Components."
+            )
+
+        if SECOND_PC < 1 or SECOND_PC > num_pcs:
+            sys.exit(
+                "Second Principle Component must be greater than or equal to 1 and less than or equal to the total number of Principle Components."
             )
 
         if SECOND_PC == FIRST_PC:
             sys.exit("Second Principle Component cannot equal the first.")
 
-        if COLORBY == "none":
+        if colorby == "none":
             title = f"{NAME} with {num_pcs} Principle Components"
             filename = f"{NAME}_{num_pcs} PCs_PC{FIRST_PC} - PC{SECOND_PC}"
         else:
-            title = f"{NAME} coloured by {COLORBY.capitalize()} with {num_pcs} Principle Components"
-            filename = f"{NAME}_{COLORBY.capitalize()}_{num_pcs} PCs_PC{FIRST_PC} - PC{SECOND_PC}"
+            title = f"{NAME} coloured by {colorby.capitalize()} with {num_pcs} Principle Components"
+            filename = f"{NAME}_{colorby.capitalize()}_{num_pcs} PCs_PC{FIRST_PC} - PC{SECOND_PC}"
 
-        if COLORBY == "none":
+        if colorby == "none":
             pp.score_scatter(
                 pcaobj,
                 [FIRST_PC, SECOND_PC],
@@ -104,7 +111,7 @@ def main():
                 [FIRST_PC, SECOND_PC],
                 addtitle=title,
                 CLASSID=sample_df,
-                colorby=COLORBY,
+                colorby=colorby,
                 filename=filename,
             )
 
@@ -116,6 +123,12 @@ def main():
                 filename=filename,
                 score_plot_xydim=[FIRST_PC, SECOND_PC],
             )
+
+    print()
+    print(
+        f'Please see "{SPECTRA_OUTPUT}/spectra_samples.txt" for a list of the samples displayed.'
+    )
+    print()
 
     # Wait for plots to load in browser
     time.sleep(5)
@@ -151,8 +164,9 @@ def display_spectra(files, title):
 
     filtered_sample_labels = []
     for s in sample_labels:
-        row = s[0]
-        col = int(s[1:].split()[0])
+        if s != "glass reference":
+            row = s[0]
+            col = int(s[1:].split()[0])
 
         if row not in rows_to_remove and col not in cols_to_remove:
             filtered_sample_labels.append(s)
@@ -172,6 +186,13 @@ def display_spectra(files, title):
         preprocess_with_savgol = settings["Savitzky-Golay"]
         preprocess_with_snv = settings["Standard Normal Variate"]
 
+    if preprocess_with_snv is True:
+        pipeline.append(
+            rp.preprocessing.PreprocessingStep(standard_normal_variate)
+        )
+        title += " + Standard Normal Variate"
+        filename += "_snv"
+
     if preprocess_with_savgol is True:
 
         with open(f"{PCA_OUTPUT}/pca_settings.json") as f:
@@ -190,18 +211,12 @@ def display_spectra(files, title):
         title += " + Savitzky-Golay filter"
         filename += f"_savgol_win{savgol_window}_poly{savgol_polynomial}_deriv{savgol_derivative}"
 
-    if preprocess_with_snv is True:
-        pipeline.append(
-            rp.preprocessing.PreprocessingStep(standard_normal_variate)
-        )
-        title += " + Standard Normal Variate"
-        filename += "_snv"
-
-    preprocessing_pipeline = rp.preprocessing.Pipeline(pipeline)
-
-    if preprocess_with_savgol is False and preprocess_with_snv is False:
+    if pipeline == []:
         title += " (no preprocessing applied)"
         filename += "_nopreprocessing"
+    
+    preprocessing_pipeline = rp.preprocessing.Pipeline(pipeline)
+
 
 
     plate = []
@@ -245,11 +260,6 @@ def display_spectra(files, title):
 
     plt.savefig(f"{SPECTRA_OUTPUT}/{filename}", bbox_inches="tight", dpi=300)
     plt.show()
-
-    print(
-        f'Please see "{SPECTRA_OUTPUT}/spectra_samples.txt" for a list of the samples displayed.'
-    )
-    print()
 
 
 # ====================================================
@@ -327,7 +337,6 @@ def standard_normal_variate(intensity_data, spectral_axis):
     snv_intensity_data = (intensity_data - mean) / std
 
     return snv_intensity_data, spectral_axis
-    
 
 
 if __name__ == "__main__":
