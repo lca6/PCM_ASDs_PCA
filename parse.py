@@ -2,7 +2,7 @@ import pathlib
 import shutil
 import sys
 
-from settings import ANALYSIS_FOLDER, DISPLAY_PARSED_FILES, MACBOOK_URL
+from settings import ANALYSIS_FOLDER, MACBOOK_URL
 from sort import sort_files
 
 # =========================================================================
@@ -12,6 +12,9 @@ from sort import sort_files
 
 
 def parse():
+
+    print("Analysing files...")
+    print()
 
     files = pathlib.Path(ANALYSIS_FOLDER)
     files = [str(x) for x in files.iterdir()]
@@ -28,9 +31,6 @@ def parse():
     for file in files:
 
         if "_multiwell.txt" not in file:
-
-            if DISPLAY_PARSED_FILES is True:
-                print(f"{file} was not parsed")
             continue
 
         plate_num, plate_conc = (
@@ -65,19 +65,16 @@ def parse():
         header, spectra = parse_multiwell_file(pathlib.Path(file))
         write_txt_file(header, spectra, pathlib.Path(output_dir), plate_num, plate_conc)
 
-        if DISPLAY_PARSED_FILES is True:
-            print(f"{file} was parsed")
-
         # Move multiwell file to Bin once parsed
         trash = pathlib.Path.home() / ".Trash"
-        shutil.move(str(file), trash / file.name)
+        file = pathlib.Path(file)
+        shutil.move(file, trash / file.name)
 
     files = pathlib.Path(ANALYSIS_FOLDER)
     files = [str(x) for x in files.iterdir()]
 
     # Sorts the order that the files are returned by the function
     files, sample_labels = sort_files(files)
-    print()
 
     # Convert files from latin-1 to utf-8 for visualising the spectra and for PCA
     for file in files:
@@ -86,6 +83,9 @@ def parse():
 
         with open(file, "w", encoding="utf-8") as f:
             f.write(text)
+
+    print("Files analysed.")
+    print()
 
     return files, sample_labels
 
