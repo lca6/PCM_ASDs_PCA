@@ -14,6 +14,9 @@ ROWS_TO_REMOVE = []
 # Filter samples by columns (e.g. 5)
 COLS_TO_REMOVE = []
 
+# Crop spectra => to not crop the spectrum: (None, None)
+WAVENUMBER_RANGE = (None, None)
+
 # Toggle whether to conduct PCA
 CONDUCT_PCA = False
 
@@ -32,17 +35,17 @@ DISPLAY_PCs_R2X = False
 # Toggle whether to display score scatter
 DISPLAY_SCORE_SCATTER = False
 
-# Choose parameter to colour by
-COLORBY = "concentration"
+# Choose parameter to colour by (to not colour: "none")
+COLORBY = "none"
 
 # Toggle whether to display spectra
 DISPLAY_SPECTRA = False
 
 # Toggle whether to display sample labels
-SAMPLE_LABELS = False
+DISPLAY_SAMPLE_LABELS = False
 
 # Number of Principle Components
-NUM_PCS = 3
+NUM_PCS = 5
 
 # Principle Components that you would like to plot - FIRST_PC on the x-axis
 FIRST_PC = 1
@@ -59,12 +62,9 @@ PREPROCESS_WITH_SAVGOL = False
 # Savitzky-Golay filter parameters
 SAVGOL_DERIVATIVE = 0
 
-SAVGOL_POLYNOMIAL = 3
+SAVGOL_POLYNOMIAL = 0
 
-SAVGOL_WINDOW = 7
+SAVGOL_WINDOW = 0
 
 # Toggle preprocessing with Standard Normal Variate
 PREPROCESS_WITH_SNV = False
-
-# Crop spectra => to not crop the spectrum: (None, None)
-WAVENUMBER_RANGE = (None, None)
