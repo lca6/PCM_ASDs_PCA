@@ -7,3 +7,4 @@ pca_output/
 spectra_output/
 *.html
 *.png
+.DS_Store
