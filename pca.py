@@ -5,6 +5,7 @@ import pathlib
 import ramanspy as rp
 import shutil
 import sys
+import time
 
 from contextlib import redirect_stderr, redirect_stdout
 
@@ -29,14 +30,23 @@ from settings import (
     WAVENUMBER_RANGE,
 )
 
+if CONDUCT_PCA is False:
+    sys.exit("CONDUCT_PCA is set to False in settings.py")
+
 # Moves files from pca_output to Bin
 folder = pathlib.Path(f"{MACBOOK_URL}/{PCA_OUTPUT}")
 trash = pathlib.Path.home() / ".Trash"
 
-for item in folder.iterdir():
-    if item.is_file():
-        shutil.move(str(item), trash / item.name)
+delete = input(f"Delete all files from {MACBOOK_URL}{PCA_OUTPUT}? (y/n) ").lower()
 
+if delete == "n":
+    sys.exit("PCA aborted")
+
+for item in folder.iterdir():
+    if item.is_file() and delete == "y":
+            shutil.move(str(item), trash / item.name)
+
+time.sleep(3)
 
 # Parse any multiwell files in the analyse/ folder
 parsed_files, _ = parse()
@@ -107,7 +117,7 @@ for file in parsed_files:
                     if shift > WAVENUMBER_RANGE[1]:
                         continue
 
-                if sample.plate in [2, 3]:
+                if sample.plate in [0, 2, 3]:
 
                     l_2_3.append(
                         dict(
@@ -267,7 +277,7 @@ if CONDUCT_PCA is True:
     sys.exit(
         f"""PCA successfully conducted with {NUM_PCS} Principle Components, removing {CROSS_VAL}% of data per round.\n
     Please see \"{PCA_OUTPUT}/dataframes.txt\" for the dataframes analysed by PCA.\n
-    Please see \"{PCA_OUTPUT}/files_analysed.txt\" for files analysed.\n
+    Please see \"{PCA_OUTPUT}/files_analysed.txt\" for a list of the files analysed.\n
     Please see \"{PCA_OUTPUT}/pca_settings.json\" for the settings applied to the dataframes before PCA.\n
     Please see \"{PCA_OUTPUT}/pca_terminal_output.txt\" for the diagnostics sent to the terminal.\n
     Please see \"{PCA_OUTPUT}/pcaobj.txt\" for the elements of the PCA model.
