@@ -30,6 +30,16 @@ from settings import (
     WAVENUMBER_RANGE,
 )
 
+if WAVENUMBER_RANGE[0] is None:
+    lower_bound = 0
+else:
+    lower_bound = WAVENUMBER_RANGE[0]
+
+if WAVENUMBER_RANGE[1] is None:
+    upper_bound = 2000
+else:
+    upper_bound = WAVENUMBER_RANGE[1]
+
 if CONDUCT_PCA is False:
     sys.exit("CONDUCT_PCA is set to False in settings.py")
 
@@ -37,7 +47,9 @@ if CONDUCT_PCA is False:
 folder = pathlib.Path(f"{MACBOOK_URL}/{PCA_OUTPUT}")
 trash = pathlib.Path.home() / ".Trash"
 
+print()
 delete = input(f"Delete all files from {MACBOOK_URL}{PCA_OUTPUT}? (y/n) ").lower()
+print()
 
 if delete == "n":
     sys.exit("PCA aborted")
@@ -59,13 +71,19 @@ dataframes_2_and_3 = []
 dataframe_4 = []
 dicts = []
 
+print("Creating dataframes...")
+print()
+
 for file in parsed_files:
 
     spectrum = rp.load.labspec(f"{MACBOOK_URL}{file}")
 
     sample = Sample(file, spectrum)
 
+    # ====================================
     # Filter samples to be included in PCA
+    # ====================================
+
     if sample.row in ROWS_TO_REMOVE:
         continue
     elif sample.col in COLS_TO_REMOVE:
@@ -109,12 +127,12 @@ for file in parsed_files:
                 intensity = float(intensity[:-1])
 
                 # Crop dataframe according to WAVENUMBER_RANGE
-                if WAVENUMBER_RANGE[0] is not None:
-                    if shift < WAVENUMBER_RANGE[0]:
+                if lower_bound != 0:
+                    if shift < lower_bound:
                         continue
 
-                if WAVENUMBER_RANGE[1] is not None:
-                    if shift > WAVENUMBER_RANGE[1]:
+                if upper_bound != 2000:
+                    if shift > upper_bound:
                         continue
 
                 if sample.plate in [0, 2, 3]:
@@ -177,26 +195,30 @@ if dataframe_4 != []:
 else:
     spectral_df = plates_2_and_3
 
+print(f"Dataframes created with shifts between {lower_bound} and {upper_bound} cm-1")
+print()
 
 # =============
 # Preprocessing
 # =============
 
+if PREPROCESS_WITH_SNV is True:
+    print("Processing with Standard Normal Variate...")
+    print()
+    spectral_df = phi.spectra_snv(spectral_df)
+    print("Standard Normal Variate applied.")
+    print()
+
 
 if PREPROCESS_WITH_SAVGOL is True:
-
+    print("Processing with Savitzky-Golay...")
+    print()
     spectral_df, _ = phi.spectra_savgol(
         SAVGOL_WINDOW, SAVGOL_DERIVATIVE, SAVGOL_POLYNOMIAL, spectral_df
     )
     print(
         f"Savitzky-Golay filter applied with derivative order {SAVGOL_DERIVATIVE}, polynomial order {SAVGOL_POLYNOMIAL}, and window size {SAVGOL_WINDOW}."
     )
-    print()
-
-
-if PREPROCESS_WITH_SNV is True:
-    spectral_df = phi.spectra_snv(spectral_df)
-    print("Standard Normal Variate applied.")
     print()
 
 
