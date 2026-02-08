@@ -56,7 +56,7 @@ if delete == "n":
 
 for item in folder.iterdir():
     if item.is_file() and delete == "y":
-            shutil.move(str(item), trash / item.name)
+        shutil.move(str(item), trash / item.name)
 
 time.sleep(3)
 
@@ -269,7 +269,7 @@ if CONDUCT_PCA is True:
 
     # Saves settings (from settings.py) at PCA runtime
     with open(f"{PCA_OUTPUT}/pca_settings.json", "w") as f:
-        
+
         settings = {}
         settings["Principle Components"] = NUM_PCS
         settings["Cross_val"] = CROSS_VAL
@@ -307,8 +307,10 @@ if CONDUCT_PCA is True:
     )
 
 elif CONDUCT_PCA is False:
-    sys.exit(f"""
+    sys.exit(
+        f"""
     Did not conduct PCA.\n
     Please see \"{PCA_OUTPUT}/dataframes.txt\" for the dataframes created.\n
     Please see \"{PCA_OUTPUT}/files_analysed.txt\" for files analysed.\n
-    """)
+    """
+    )

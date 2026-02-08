@@ -142,7 +142,6 @@ def main():
         shutil.move(html_file, dst_dir / html_file.name)
 
 
-
 # ========================
 # Visualising the spectra
 # ========================
@@ -187,9 +186,7 @@ def display_spectra(files, title):
         preprocess_with_snv = settings["Standard Normal Variate"]
 
     if preprocess_with_snv is True:
-        pipeline.append(
-            rp.preprocessing.PreprocessingStep(standard_normal_variate)
-        )
+        pipeline.append(rp.preprocessing.PreprocessingStep(standard_normal_variate))
         title += " + Standard Normal Variate"
         filename += "_snv"
 
@@ -214,10 +211,8 @@ def display_spectra(files, title):
     if pipeline == []:
         title += " (no preprocessing applied)"
         filename += "_nopreprocessing"
-    
+
     preprocessing_pipeline = rp.preprocessing.Pipeline(pipeline)
-
-
 
     plate = []
     spectra_to_visualise = []
@@ -323,7 +318,7 @@ def display_PCs_R2X(x_axis, y_axis):
 
 
 def standard_normal_variate(intensity_data, spectral_axis):
-    
+
     intensity_data = np.asarray(intensity_data, dtype=float)
 
     # If 1D, make it 2D with 1 row
