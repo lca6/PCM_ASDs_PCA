@@ -53,7 +53,7 @@ from bokeh.io import show, output_file
 from bokeh.plotting import figure
 from bokeh.layouts import column
 from bokeh.models import ColumnDataSource,LabelSet,Span,Legend
-import pyphi as phi
+import pcm_asds_pca.pyphi.pyphi as phi
 import pandas as pd
 from datetime import datetime
 import math

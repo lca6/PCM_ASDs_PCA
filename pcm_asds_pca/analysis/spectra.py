@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pathlib
-import pyphi.pyphi_plots as pp
+import pcm_asds_pca.pyphi.pyphi_plots as pp
 import ramanspy as rp
 import shutil
 import sys
@@ -11,9 +11,7 @@ import time
 
 from matplotlib.ticker import MaxNLocator
 
-from sample import Sample
-
-from settings import (
+from pcm_asds_pca.config.settings import (
     COLORBY,
     DISPLAY_DIAGNOSTICS,
     DISPLAY_PCs_R2X,
@@ -21,14 +19,16 @@ from settings import (
     DISPLAY_SCORE_SCATTER,
     DISPLAY_SPECTRA,
     FIRST_PC,
-    MACBOOK_URL,
+    PATH_TO_DIR,
     NAME,
     PCA_OUTPUT,
     SECOND_PC,
     SPECTRA_OUTPUT,
 )
 
-from sort import sort_files
+from pcm_asds_pca.core.sample import Sample
+
+from pcm_asds_pca.core.sort import sort_files
 
 
 def main():
@@ -39,6 +39,10 @@ def main():
     with open(f"{PCA_OUTPUT}/pca_settings.json") as f:
         settings = json.load(f)
         num_pcs = settings["Principle Components"]
+
+    folder = pathlib.Path(f"{SPECTRA_OUTPUT}")
+    if not folder.exists():
+        folder.mkdir(parents=True, exist_ok=True)
 
     if DISPLAY_SPECTRA is True:
 
@@ -220,7 +224,7 @@ def display_spectra(files, title):
     for file in files:
 
         # Loads the Raman object for visualising the spectrum
-        spectrum = rp.load.labspec(f"{MACBOOK_URL}{file}")
+        spectrum = rp.load.labspec(f"{PATH_TO_DIR}{file}")
 
         sample = Sample(file, spectrum)
 

@@ -3,10 +3,11 @@ from os import getenv
 
 load_dotenv()
 
-ANALYSIS_FOLDER = getenv("ANALYSIS_FOLDER")
-MACBOOK_URL = getenv("MACBOOK_URL")
-PCA_OUTPUT = getenv("PCA_OUTPUT")
-SPECTRA_OUTPUT = getenv("SPECTRA_OUTPUT")
+PATH_TO_DIR = getenv("PATH_TO_DIR")
+
+ANALYSIS_FOLDER = "analyse"
+PCA_OUTPUT = "pca_output"
+SPECTRA_OUTPUT = "spectra_output"
 
 # Filter samples by rows (e.g. "B")
 ROWS_TO_REMOVE = []
@@ -26,9 +27,6 @@ CROSS_VAL = 0
 # Toggle whether to display diagnostics (Hotelling's T2 and SPE)
 DISPLAY_DIAGNOSTICS = False
 
-# Toggle whether to display parsed files in the terminal
-DISPLAY_PARSED_FILES = False
-
 # Toggle whether to display plot of PCs vs sum(R2X)
 DISPLAY_PCs_R2X = False
 
@@ -45,16 +43,19 @@ DISPLAY_SPECTRA = False
 DISPLAY_SAMPLE_LABELS = False
 
 # Number of Principle Components
-NUM_PCS = 5
+NUM_PCS = 0
 
 # Principle Components that you would like to plot - FIRST_PC on the x-axis
-FIRST_PC = 1
+FIRST_PC = 0
 
 # Principle Components that you would like to plot - SECOND_PC on the y-axis
-SECOND_PC = 2
+SECOND_PC = 0
 
 # Name of plots and files
 NAME = ""
+
+# Toggle preprocessing with Standard Normal Variate
+PREPROCESS_WITH_SNV = False
 
 # Toggle preprocessing with Savitzky-Golay filter
 PREPROCESS_WITH_SAVGOL = False
@@ -65,6 +66,3 @@ SAVGOL_DERIVATIVE = 0
 SAVGOL_POLYNOMIAL = 0
 
 SAVGOL_WINDOW = 0
-
-# Toggle preprocessing with Standard Normal Variate
-PREPROCESS_WITH_SNV = False

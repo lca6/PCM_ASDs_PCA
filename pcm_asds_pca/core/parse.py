@@ -2,8 +2,8 @@ import pathlib
 import shutil
 import sys
 
-from settings import ANALYSIS_FOLDER, MACBOOK_URL
-from sort import sort_files
+from pcm_asds_pca.config.settings import ANALYSIS_FOLDER, PATH_TO_DIR
+from pcm_asds_pca.core.sort import sort_files
 
 # =========================================================================
 # Parse all files that end with "_multiwell.txt" and ignore all other files
@@ -16,6 +16,11 @@ def parse():
     print("Analysing files...")
     print()
 
+    folder = pathlib.Path(f"{PATH_TO_DIR}/{ANALYSIS_FOLDER}")
+
+    if not folder.exists():
+        folder.mkdir(parents=True, exist_ok=True)
+
     files = pathlib.Path(ANALYSIS_FOLDER)
     files = [str(x) for x in files.iterdir()]
 
@@ -23,7 +28,7 @@ def parse():
     try:
         files[0]
     except IndexError:
-        sys.exit("No files provided")
+        sys.exit(f"Please provide .txt files in {PATH_TO_DIR}{ANALYSIS_FOLDER}")
 
     # Sorts the order that the files are parsed
     files, _ = sort_files(files)
@@ -60,7 +65,7 @@ def parse():
         with open(file, "w", encoding="utf-8") as f:
             f.write(text)
 
-        output_dir = f"{MACBOOK_URL}{ANALYSIS_FOLDER}/"
+        output_dir = f"{PATH_TO_DIR}{ANALYSIS_FOLDER}/"
 
         header, spectra = parse_multiwell_file(pathlib.Path(file))
         write_txt_file(header, spectra, pathlib.Path(output_dir), plate_num, plate_conc)

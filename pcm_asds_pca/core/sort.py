@@ -1,4 +1,4 @@
-from settings import ANALYSIS_FOLDER
+from pcm_asds_pca.config.settings import ANALYSIS_FOLDER
 import re
 
 # ==================================================
