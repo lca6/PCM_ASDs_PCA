@@ -2,9 +2,6 @@ __pycache__/
 .env
 build/
 *.egg-info/
-analyse/
-pca_output/
-spectra_output/
 *.html
 *.png
 .DS_Store
