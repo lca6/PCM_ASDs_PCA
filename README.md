@@ -14,7 +14,6 @@ This is the repository that accompanies the paper titled 'Material-sparing scree
 4) Install this package and its pip-only dependencies:
    ```bash
    pip install .[ramanspy]
-
 ## Workflow
 1) Copy and paste the .txt files to be analysed into the folder `analyse/`
 2) Configure parameters in `settings.py`
@@ -23,8 +22,7 @@ This is the repository that accompanies the paper titled 'Material-sparing scree
    python -m pcm_asds_pca.analysis.pca
 4) To display desired graphs:
    ```bash
-   python -m pcm_asds_pca.analysis.spectra`
-
+   python -m pcm_asds_pca.analysis.spectra
 ## Output
 The scripts in this project automatically generate output files in designated folders:
 
@@ -39,17 +37,17 @@ The folders `analyse/`, `pca_output/` and `spectra_output/` contain `.gitkeep` f
 You can modify the default output folder names by editing `settings.py`
 
 ## Project Structure
-### data_collected/
+#### data_collected/
 A folder containing .txt files obtained from the HORIBA LabRAM Odyssey confocal Raman microscope.
 
-### pcm_asds_pca/pyphi/
+#### pcm_asds_pca/pyphi/
 A folder containing files from Sal Garcia's pyphi repository (available at https://github.com/salvadorgarciamunoz/pyphi) which allow us to conduct PCA on the spectral data.
 
-### pcm_asds_pca/analysis/
+#### pcm_asds_pca/analysis/
 A folder containing `pca.py` and `spectra.py` for creating a PCA model and displaying graphs.
 
-### pcm_asds_pca/config/
+#### pcm_asds_pca/config/
 A folder containing `settings.py` to configure the PCA model.
 
-### pcm_asds_pca/core/
+#### pcm_asds_pca/core/
 A folder contains functions and classes utilised by `pca.py` and `spectra.py`
