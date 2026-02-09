@@ -1,10 +1,11 @@
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "PCM_ASDs_PCA"
-version = "1.0"
+version = "2.0"
+
 dependencies = [
         "bokeh",
         "matplotlib",
@@ -13,11 +14,13 @@ dependencies = [
         "pandas",
         "pyomo",
         "python-dotenv",
-        "ramanspy",
         "scipy",
         "spyder",
         "xlrd",
 ]
+
+[project.optional-dependencies]
+ramanspy = ["ramanspy"]
 
 authors = [
     {name = "Sal Garcia", email = "sgarciam@ic.ac.uk"}
@@ -44,5 +47,8 @@ Repository = "https://github.com/lca6/PCM_ASDs_PCA"
 
 
 [tool.setuptools]
-packages = ["pyphi"]
+include-package-data = true
 
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pcm_asds_pca*"]
