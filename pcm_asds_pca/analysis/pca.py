@@ -17,6 +17,7 @@ from pcm_asds_pca.config.settings import (
     PATH_TO_DIR,
     NUM_PCS,
     PCA_OUTPUT,
+    PLATES_TO_REMOVE,
     ROWS_TO_REMOVE,
     PREPROCESS_WITH_SAVGOL,
     PREPROCESS_WITH_SNV,
@@ -76,10 +77,6 @@ def main():
     # Parse any multiwell files in the analyse/ folder
     parsed_files, _ = parse()
 
-    # Save parsed_files to txt file
-    with open(f"{PCA_OUTPUT}/files_analysed.txt", "w") as f:
-        json.dump(parsed_files, f, indent=2)
-
     dataframes_2_and_3 = []
     dataframe_4 = []
     dicts = []
@@ -100,6 +97,8 @@ def main():
         if sample.row in ROWS_TO_REMOVE:
             continue
         elif sample.col in COLS_TO_REMOVE:
+            continue
+        elif sample.plate in PLATES_TO_REMOVE:
             continue
 
         # =======================
@@ -253,9 +252,6 @@ def main():
             print(file=f)
             print(sample_df, file=f)
 
-    # Save spectral_df to txt file (binary format)
-    spectral_df.to_pickle(f"{PCA_OUTPUT}/spectral_df_not_viewable.pkl")
-
     # Save sample_df to txt file (binary format)
     sample_df.to_pickle(f"{PCA_OUTPUT}/sample_df_not_viewable.pkl")
 
@@ -292,6 +288,7 @@ def main():
             settings["Savitzky-Golay Window"] = SAVGOL_WINDOW
 
         settings["Standard Normal Variate"] = PREPROCESS_WITH_SNV
+        settings["Plates removed"] = PLATES_TO_REMOVE
         settings["Sample rows removed"] = ROWS_TO_REMOVE
         settings["Sample columns removed"] = COLS_TO_REMOVE
         settings["Wavenumber range"] = WAVENUMBER_RANGE
