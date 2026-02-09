@@ -28,13 +28,14 @@ from pcm_asds_pca.config.settings import (
 
 from pcm_asds_pca.core.sample import Sample
 
-from pcm_asds_pca.core.sort import sort_files
-
 
 def main():
 
     # Read pcaobj from npy file
     pcaobj = np.load(f"{PCA_OUTPUT}/pcaobj_not_viewable.npy", allow_pickle=True).item()
+
+    # Read sample_df from pkl file
+    sample_df = pd.read_pickle(f"{PCA_OUTPUT}/sample_df_not_viewable.pkl")
 
     with open(f"{PCA_OUTPUT}/pca_settings.json") as f:
         settings = json.load(f)
@@ -44,13 +45,27 @@ def main():
     if not folder.exists():
         folder.mkdir(parents=True, exist_ok=True)
 
+    sample_labels = (
+        sample_df["well"]
+        + " (" + sample_df["position"] + ")"
+        + " (" + sample_df["appearance"] + ")"
+        + " (plate " + sample_df["plate"].astype(str) + ")"
+    ).tolist()
+
+    # Prints samples to spectra_samples.txt
+    with open(f"{SPECTRA_OUTPUT}/spectra_samples.txt", "w") as f:
+        for s in sample_labels:
+            print(s, file=f)
+
+    print()
+    print(
+        f'Please see "{SPECTRA_OUTPUT}/spectra_samples.txt" for a list of the samples displayed.'
+    )
+    print()
+
     if DISPLAY_SPECTRA is True:
 
-        # Read parsed_files from txt file
-        with open(f"{PCA_OUTPUT}/files_analysed.txt") as f:
-            parsed_files = json.load(f)
-
-        display_spectra(parsed_files, NAME)
+        display_spectra(sample_df, sample_labels, NAME)
 
     if DISPLAY_PCs_R2X is True:
 
@@ -66,8 +81,6 @@ def main():
         display_PCs_R2X(x, y)
 
     if DISPLAY_SCORE_SCATTER is True:
-
-        sample_df = pd.read_pickle(f"{PCA_OUTPUT}/sample_df_not_viewable.pkl")
 
         options = []
         for i in sample_df.columns:
@@ -128,12 +141,6 @@ def main():
                 score_plot_xydim=[FIRST_PC, SECOND_PC],
             )
 
-    print()
-    print(
-        f'Please see "{SPECTRA_OUTPUT}/spectra_samples.txt" for a list of the samples displayed.'
-    )
-    print()
-
     # Wait for plots to load in browser
     time.sleep(5)
 
@@ -151,34 +158,19 @@ def main():
 # ========================
 
 
-def display_spectra(files, title):
+def display_spectra(dataframe, sample_labels, title):
 
     title = title.title()
 
     filename = f"raman_spectrum_{title}"
 
-    files, sample_labels = sort_files(files)
-
     with open(f"{PCA_OUTPUT}/pca_settings.json") as f:
         settings = json.load(f)
-        rows_to_remove = settings["Sample rows removed"]
-        cols_to_remove = settings["Sample columns removed"]
         wavenumber_range = settings["Wavenumber range"]
 
-    filtered_sample_labels = []
-    for s in sample_labels:
-        if s != "glass reference":
-            row = s[0]
-            col = int(s[1:].split()[0])
+    samples = dataframe.index.tolist()
 
-        if row not in rows_to_remove and col not in cols_to_remove:
-            filtered_sample_labels.append(s)
-
-    sample_labels = filtered_sample_labels
-
-    if DISPLAY_SAMPLE_LABELS is True:
-        sample_labels = sample_labels
-    elif DISPLAY_SAMPLE_LABELS is False:
+    if DISPLAY_SAMPLE_LABELS is False:
         sample_labels = None
 
     pipeline = []
@@ -218,23 +210,9 @@ def display_spectra(files, title):
 
     preprocessing_pipeline = rp.preprocessing.Pipeline(pipeline)
 
-    plate = []
     spectra_to_visualise = []
 
-    for file in files:
-
-        # Loads the Raman object for visualising the spectrum
-        spectrum = rp.load.labspec(f"{PATH_TO_DIR}{file}")
-
-        sample = Sample(file, spectrum)
-
-        # Filter spectra to be visualised
-        if sample.row in rows_to_remove:
-            continue
-        elif sample.col in cols_to_remove:
-            continue
-
-        plate.append(sample)
+    for sample in samples:
 
         # Crop spectra
         cropper = rp.preprocessing.misc.Cropper(region=wavenumber_range)
@@ -244,12 +222,7 @@ def display_spectra(files, title):
         preprocessed_spectrum = preprocessing_pipeline.apply(spectrum)
 
         spectra_to_visualise.append(preprocessed_spectrum)
-
-    # Prints samples to spectra_samples.txt
-    with open(f"{SPECTRA_OUTPUT}/spectra_samples.txt", "w") as f:
-        for sample in plate:
-            print(sample, file=f)
-
+    
     rp.plot.spectra(
         spectra_to_visualise,
         label=sample_labels,
