@@ -7,22 +7,32 @@ This is the repository that accompanies the paper titled 'Material-sparing scree
 1) Download this repository:
    ```bash
    git clone https://github.com/lca6/PCM_ASDs_PCA
+   ```
+
 2) Create and activate a conda environment (download Miniconda at https://www.anaconda.com/docs/getting-started/miniconda/main)
 3) Install the conda-only dependency required by `ramanspy`:
    ```bash
    conda install -c conda-forge cvxopt
+   ```
+
 4) Install this package and its pip-only dependencies:
    ```bash
    pip install .[ramanspy]
+   ```
+
 ## Workflow
 1) Copy and paste the .txt files to be analysed into the folder `analyse/`
 2) Configure parameters in `settings.py`
 3) To create a PCA model:
    ```bash
-   python -m pcm_asds_pca.analysis.pca
+   pcm-asds-pca
+   ```
+
 4) To display desired graphs:
    ```bash
-   python -m pcm_asds_pca.analysis.spectra
+   pcm-asds-spectra
+   ```
+
 ## Output
 The scripts in this project automatically generate output files in designated folders:
 
