@@ -1,14 +1,14 @@
-from pcm_asds_pca.config.settings import ANALYSIS_FOLDER
-import re
-
 # ==================================================
 # Sort files alphabetically by plate number and well
 # ==================================================
 
+from pcm_asds_pca.config.settings import ANALYSIS_FOLDER
+import re
+
 
 def sort_files(files):
 
-    # Remove glass reference - later we add back after sort
+    # Remove glass reference temporarily
     glass_reference = False
 
     if f"{ANALYSIS_FOLDER}/glass_reference.txt" in files:
@@ -25,23 +25,21 @@ def sort_files(files):
 
         # Multiwell file
         if multiwell_pattern.search(filename):
-            return (plate, -1, -1)
+            return (plate, -1, -1, -1)
 
         # Well-level file
         m = well_pattern.search(filename)
-        return (plate, ord(m.group(1)), int(m.group(2)))
+        row = ord(m.group(1))
+        col = int(m.group(2))
+
+        position = 1 if edge_pattern.search(filename) else 0
+
+        return (plate, row, col, position)
 
     sorted_files = sorted(files, key=sort_key)
 
-    sample_labels = []
-    for f in sorted_files:
-        if m := well_pattern.search(f):
-            location = "(edge)" if edge_pattern.search(f) else "(centre)"
-            sample_labels.append(f"{m.group(1)}{m.group(2)} {location}")
-
-    # Add back glass reference
+    # Add back glass reference at the end
     if glass_reference == True:
         sorted_files.append(f"{ANALYSIS_FOLDER}/glass_reference.txt")
-        sample_labels.append("glass reference")
 
-    return sorted_files, sample_labels
+    return sorted_files

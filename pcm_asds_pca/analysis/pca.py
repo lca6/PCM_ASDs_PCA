@@ -1,3 +1,9 @@
+# ====================================================================================
+# This script conducts PCA on the Raman spectra of the samples in the analyse/ folder.
+# The settings for PCA are defined in settings.py
+# The PCA model is saved to the pca_output/ folder.
+# ====================================================================================
+
 import json
 import numpy as np
 import pandas as pd
@@ -36,6 +42,7 @@ from pprint import pprint
 
 def main():
 
+    # Define upper and lower bounds for wavenumber range to be included in PCA
     if WAVENUMBER_RANGE[0] is None:
         lower_bound = 0
     else:
@@ -46,6 +53,7 @@ def main():
     else:
         upper_bound = WAVENUMBER_RANGE[1]
 
+    # Check that PCA is set to be conducted
     if CONDUCT_PCA is False:
         sys.exit("CONDUCT_PCA is set to False in settings.py")
 
@@ -71,14 +79,13 @@ def main():
         time.sleep(3)
 
     else:
-
         folder.mkdir(parents=True, exist_ok=True)
 
-    # Parse any multiwell files in the analyse/ folder
-    parsed_files, _ = parse()
+    # Parse all multiwell files in the analyse/ folder
+    parsed_files = parse()
 
-    dataframes_2_and_3 = []
-    dataframe_4 = []
+    dataframes_1_and_2 = []
+    dataframe_3 = []
     dicts = []
 
     print("Creating dataframes...")
@@ -99,6 +106,8 @@ def main():
         elif sample.col in COLS_TO_REMOVE:
             continue
         elif sample.plate in PLATES_TO_REMOVE:
+            continue
+        elif sample.appearance == "":
             continue
 
         # =======================
@@ -128,8 +137,8 @@ def main():
 
         with open(f"{PATH_TO_DIR}{file}") as f:
 
-            l_2_3 = []
-            l_4 = []
+            l_1_2 = []
+            l_3 = []
 
             for line in f:
                 if line[0] != "#":
@@ -147,9 +156,9 @@ def main():
                         if shift > upper_bound:
                             continue
 
-                    if sample.plate in [0, 2, 3]:
+                    if sample.plate in [0, 1, 2]:
 
-                        l_2_3.append(
+                        l_1_2.append(
                             dict(
                                 sample=sample,
                                 shift=shift,
@@ -157,9 +166,9 @@ def main():
                             )
                         )
 
-                    elif sample.plate == 4:
+                    elif sample.plate == 3:
 
-                        l_4.append(
+                        l_3.append(
                             dict(
                                 sample=sample,
                                 shift=shift,
@@ -167,50 +176,52 @@ def main():
                             )
                         )
 
-            if l_2_3 != []:
-                df = pd.DataFrame(l_2_3)
+            if l_1_2 != []:
+                df = pd.DataFrame(l_1_2)
                 df = df.pivot(index="sample", columns="shift", values="intensity")
-                dataframes_2_and_3.append(df)
+                dataframes_1_and_2.append(df)
 
-            if l_4 != []:
-                df = pd.DataFrame(l_4)
+            if l_3 != []:
+                df = pd.DataFrame(l_3)
                 df = df.pivot(index="sample", columns="shift", values="intensity")
-                dataframe_4.append(df)
+                dataframe_3.append(df)
 
-    plates_2_and_3 = pd.concat(dataframes_2_and_3)
+    plates_1_and_2 = pd.concat(dataframes_1_and_2)
 
-    # =====================================================================================================================================
-    # NOTE: Plates 2 and 3 were collected with an accumulation time of 5s whereas plate 4 was collected with an accumulation time of 3s.
-    # This means that the shift values for plate 4 are different to those of plates 2 and 3. Because plate 4's shifts only vary from plates
-    # 2 and 3 by a maximum of 0.07 across the entire wavenumber range (please run 'python check.py' to confirm), the decision was made to
-    # combine plate 4's data into the dataframe for PCA using the shift numbers from plates 2 and 3. This means that the shift numbers for
-    # plate 4 have been disregarded. To avoid this error, accumulation time should be consistent across plates.
-    # =====================================================================================================================================
+    # ========================================================================================================================================
+    # NOTE: Plates 1 and 2 were collected with an acquisition time of 5s whereas plate 3 was collected with an acquisition time of 3s.
+    # This means that the shift values for plate 3 are different to those of plates 1 and 2. Because plate 3's shifts only vary from plates
+    # 1 and 2 by a maximum of 0.07 across the entire wavenumber range (please see check.py from an earlier commit), the decision was made to
+    # combine plate 3's data into the dataframe for PCA using the shift numbers from plates 1 and 2. This means that the shift numbers for
+    # plate 3 have been disregarded. To avoid this error, acquisition time should be consistent across plates when collecting using multiwell.
+    # ========================================================================================================================================
 
-    if dataframe_4 != []:
+    if dataframe_3 != []:
 
-        plate_4 = pd.concat(dataframe_4)
+        plate_3 = pd.concat(dataframe_3)
 
-        if plate_4.shape[1] != plates_2_and_3.shape[1]:
+        if plate_3.shape[1] != plates_1_and_2.shape[1]:
             sys.exit(
-                "The dataframe for plate 4 does not have the same number of columns as the dataframe for plates 2 and 3."
+                "The dataframe for plate 3 does not have the same number of columns as the dataframe for plates 1 and 2."
             )
 
-        plate_4_aligned = pd.DataFrame(
-            plate_4.values,
-            columns=plates_2_and_3.columns,
-            index=plate_4.index,
+        plate_3_aligned = pd.DataFrame(
+            plate_3.values,
+            columns=plates_1_and_2.columns,
+            index=plate_3.index,
         )
 
-        spectral_df = pd.concat([plates_2_and_3, plate_4_aligned], axis=0)
+        spectral_df = pd.concat([plates_1_and_2, plate_3_aligned], axis=0)
 
     else:
-        spectral_df = plates_2_and_3
+        spectral_df = plates_1_and_2
 
     print(
         f"Dataframes created with shifts between {lower_bound} and {upper_bound} cm-1"
     )
     print()
+
+    sample_df = pd.DataFrame(dicts).set_index("sample")
 
     # =============
     # Preprocessing
@@ -234,8 +245,7 @@ def main():
         )
         print()
 
-    sample_df = pd.DataFrame(dicts).set_index("sample")
-
+    # Save dataframes to .txt file
     with open(f"{PCA_OUTPUT}/dataframes.txt", "w") as f:
         with pd.option_context(
             "display.max_rows",
@@ -252,9 +262,11 @@ def main():
             print(file=f)
             print(sample_df, file=f)
 
-    # Save sample_df to txt file (binary format)
+    # Save sample_df to .pkl file
+    # This file is not human-readable
     sample_df.to_pickle(f"{PCA_OUTPUT}/sample_df_not_viewable.pkl")
 
+    # Check that CROSS_VAL and NUM_PCS are set to valid values
     if CROSS_VAL > 100 or CROSS_VAL < 0:
         sys.exit("CROSS_VAL must be an integer between 0 and 100")
 
@@ -270,11 +282,11 @@ def main():
 
             pcaobj = phi.pca(spectral_df, int(NUM_PCS), cross_val=int(CROSS_VAL))
 
-    # Print pcaobj to file
+    # Save pcaobj to a .txt file
     with open(f"{PCA_OUTPUT}/pcaobj.txt", "w") as f:
         pprint(pcaobj, stream=f)
 
-    # Saves settings (from settings.py) at PCA runtime
+    # Save settings from settings.py at PCA runtime
     with open(f"{PCA_OUTPUT}/pca_settings.json", "w") as f:
 
         settings = {}
@@ -301,7 +313,9 @@ def main():
         if np.isnan(i):
             sys.exit(f"PCA not successful.")
 
-    # If successful, save pcaobj to npy file
+    # If successful, save pcaobj to .npy file
+    # This is a format that can be loaded into Python for plotting and further analysis
+    # This file is not human-readable
     np.save(f"{PCA_OUTPUT}/pcaobj_not_viewable.npy", pcaobj)
 
     sys.exit(

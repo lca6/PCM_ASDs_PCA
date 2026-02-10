@@ -1,14 +1,14 @@
+# =========================================================================
+# Parse all files that end with "_multiwell.txt" and ignore all other files
+# Output individual spectra to .txt files
+# =========================================================================
+
 import pathlib
 import shutil
 import sys
 
 from pcm_asds_pca.config.settings import ANALYSIS_FOLDER, PATH_TO_DIR
 from pcm_asds_pca.core.sort import sort_files
-
-# =========================================================================
-# Parse all files that end with "_multiwell.txt" and ignore all other files
-# Output individual spectra to .txt files
-# =========================================================================
 
 
 def parse():
@@ -31,7 +31,7 @@ def parse():
         sys.exit(f"Please provide .txt files in {PATH_TO_DIR}{ANALYSIS_FOLDER}")
 
     # Sorts the order that the files are parsed
-    files, _ = sort_files(files)
+    files = sort_files(files)
 
     for file in files:
 
@@ -79,7 +79,7 @@ def parse():
     files = [str(x) for x in files.iterdir()]
 
     # Sorts the order that the files are returned by the function
-    files, sample_labels = sort_files(files)
+    files = sort_files(files)
 
     # Convert files from latin-1 to utf-8 for visualising the spectra and for PCA
     for file in files:
@@ -92,14 +92,12 @@ def parse():
     print("Files analysed.")
     print()
 
-    return files, sample_labels
+    return files
 
 
-# =====================
+# ==================
 # Core parsing logic
-# =====================
-
-
+# ==================
 def parse_multiwell_file(path):
     header = []
     data_lines = []
@@ -148,11 +146,9 @@ def parse_multiwell_file(path):
     return header, spectra
 
 
-# =====================
+# =============
 # Output logic
-# =====================
-
-
+# =============
 def write_txt_file(header, spectra, outdir, plate_number, plate_concentration):
     outdir.mkdir(parents=True, exist_ok=True)
 
@@ -167,11 +163,9 @@ def write_txt_file(header, spectra, outdir, plate_number, plate_concentration):
                 f.write(f"{xi:.6f}\t{yi:.6f}\n")
 
 
-# =====================
+# ================
 # Plate utilities
-# =====================
-
-
+# ================
 def rowcol_to_well(row, col):
     """
     Plate convention:

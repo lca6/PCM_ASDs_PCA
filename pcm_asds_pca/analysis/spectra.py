@@ -1,3 +1,7 @@
+# ==================================================
+# Spectra visualisation and plotting of PCA results.
+# ==================================================
+
 import json
 import matplotlib.pyplot as plt
 import numpy as np
@@ -31,28 +35,38 @@ from pcm_asds_pca.core.sample import Sample
 
 def main():
 
-    # Read pcaobj from npy file
+    # Read pcaobj from .npy file
     pcaobj = np.load(f"{PCA_OUTPUT}/pcaobj_not_viewable.npy", allow_pickle=True).item()
 
-    # Read sample_df from pkl file
+    # Read sample_df from .pkl file
     sample_df = pd.read_pickle(f"{PCA_OUTPUT}/sample_df_not_viewable.pkl")
 
+    # Read num_pcs from pca_settings.json file
     with open(f"{PCA_OUTPUT}/pca_settings.json") as f:
         settings = json.load(f)
         num_pcs = settings["Principle Components"]
 
+    # Create spectra_output folder if it doesn't exist
     folder = pathlib.Path(f"{SPECTRA_OUTPUT}")
     if not folder.exists():
         folder.mkdir(parents=True, exist_ok=True)
 
+    # Create a list of sample labels
+    # The label for each sample is in the format: "well (position) (appearance) (plate X)"
     sample_labels = (
         sample_df["well"]
-        + " (" + sample_df["position"] + ")"
-        + " (" + sample_df["appearance"] + ")"
-        + " (plate " + sample_df["plate"].astype(str) + ")"
+        + " ("
+        + sample_df["position"]
+        + ")"
+        + " ("
+        + sample_df["appearance"]
+        + ")"
+        + " (plate "
+        + sample_df["plate"].astype(str)
+        + ")"
     ).tolist()
 
-    # Prints samples to spectra_samples.txt
+    # Save samples to spectra_samples.txt
     with open(f"{SPECTRA_OUTPUT}/spectra_samples.txt", "w") as f:
         for s in sample_labels:
             print(s, file=f)
@@ -63,25 +77,30 @@ def main():
     )
     print()
 
+    # ===============================================================================================
+    # Display Raman spectra
+    # The spectra are preprocessed with the same preprocessing techniques as those applied before PCA
+    # This ensures that the spectra visualised are the same as those used for PCA
+    # ===============================================================================================
     if DISPLAY_SPECTRA is True:
 
         display_spectra(sample_df, sample_labels, NAME)
 
+    # ===========================================================================
+    # Display a plot of the number of Principle Components (PCs) against sum(R2X)
+    # This helps decide how many PCs to retain for analysis and visualisation
+    # ===========================================================================
     if DISPLAY_PCs_R2X is True:
 
-        x = [x for x in range(1, num_pcs + 1)]
+        display_PCs_R2X(num_pcs, pcaobj)
 
-        y = []
-        sum_r2x = 0
-
-        for i in pcaobj["r2x"]:
-            sum_r2x += i
-            y.append(round(sum_r2x, 3))
-
-        display_PCs_R2X(x, y)
-
+    # ==================================================================================
+    # Display score scatter plot of FIRST_PC against SECOND_PC as defined in settings.py
+    # Coloured by a parameter of choice (e.g. "concentration")
+    # ==================================================================================
     if DISPLAY_SCORE_SCATTER is True:
 
+        # Check that COLORBY, FIRST_PC and SECOND_PC are set to valid values
         options = []
         for i in sample_df.columns:
             options.append(i)
@@ -107,6 +126,7 @@ def main():
         if SECOND_PC == FIRST_PC:
             sys.exit("Second Principle Component cannot equal the first.")
 
+        # Set title and filename for score scatter and diagnostics plots based on COLORBY, FIRST_PC and SECOND_PC
         if colorby == "none":
             title = f"{NAME} with {num_pcs} Principle Components"
             filename = f"{NAME}_{num_pcs} PCs_PC{FIRST_PC} - PC{SECOND_PC}"
@@ -114,6 +134,9 @@ def main():
             title = f"{NAME} coloured by {colorby.capitalize()} with {num_pcs} Principle Components"
             filename = f"{NAME}_{colorby.capitalize()}_{num_pcs} PCs_PC{FIRST_PC} - PC{SECOND_PC}"
 
+        # ========================================================
+        # Display score scatter plot of FIRST_PC against SECOND_PC
+        # ========================================================
         if colorby == "none":
             pp.score_scatter(
                 pcaobj,
@@ -132,6 +155,9 @@ def main():
                 filename=filename,
             )
 
+        # ==============================
+        # Display Hotelling's T2 and SPE
+        # ==============================
         if DISPLAY_DIAGNOSTICS is True:
 
             pp.diagnostics(
@@ -144,7 +170,7 @@ def main():
     # Wait for plots to load in browser
     time.sleep(5)
 
-    # Move html files to spectra_output
+    # Move .html files to spectra_output/ folder
     src_dir = pathlib.Path(".")
     dst_dir = pathlib.Path(f"{SPECTRA_OUTPUT}")
     dst_dir.mkdir(parents=True, exist_ok=True)
@@ -156,20 +182,20 @@ def main():
 # ========================
 # Visualising the spectra
 # ========================
-
-
-def display_spectra(dataframe, sample_labels, title):
+def display_spectra(sample_df, sample_labels, title):
 
     title = title.title()
 
     filename = f"raman_spectrum_{title}"
 
+    # Read wavenumber_range from pca_settings.json file
     with open(f"{PCA_OUTPUT}/pca_settings.json") as f:
         settings = json.load(f)
         wavenumber_range = settings["Wavenumber range"]
 
-    samples = dataframe.index.tolist()
+    samples = sample_df.index.tolist()
 
+    # To not display sample labels
     if DISPLAY_SAMPLE_LABELS is False:
         sample_labels = None
 
@@ -218,11 +244,12 @@ def display_spectra(dataframe, sample_labels, title):
         cropper = rp.preprocessing.misc.Cropper(region=wavenumber_range)
         spectrum = cropper.apply(sample.spectrum)
 
-        # Preprocess the spectrum
+        # Preprocess the spectrum with the same preprocessing techniques as those applied before PCA
         preprocessed_spectrum = preprocessing_pipeline.apply(spectrum)
 
         spectra_to_visualise.append(preprocessed_spectrum)
-    
+
+    # Plot the spectra overlaid on a single axis
     rp.plot.spectra(
         spectra_to_visualise,
         label=sample_labels,
@@ -234,12 +261,19 @@ def display_spectra(dataframe, sample_labels, title):
     plt.show()
 
 
-# ====================================================
-# Plot number of principle components against sum(R2X)
-# ====================================================
+# ===================================
+# Plot number of PCs against sum(R2X)
+# ===================================
+def display_PCs_R2X(num_pcs, pcaobj):
 
+    x_axis = [x for x in range(1, num_pcs + 1)]
 
-def display_PCs_R2X(x_axis, y_axis):
+    y_axis = []
+    sum_r2x = 0
+
+    for i in pcaobj["r2x"]:
+        sum_r2x += i
+        y_axis.append(round(sum_r2x, 3))
 
     if len(x_axis) != len(y_axis):
         raise ValueError("x and y must be the same length")
@@ -294,6 +328,9 @@ def display_PCs_R2X(x_axis, y_axis):
     plt.show()
 
 
+# ====================================================
+# Standard Normal Variate (SNV) preprocessing function
+# ====================================================
 def standard_normal_variate(intensity_data, spectral_axis):
 
     intensity_data = np.asarray(intensity_data, dtype=float)
