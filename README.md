@@ -1,7 +1,7 @@
 # Principle Component Analysis on Raman spectra of Paracetamol Amorphous Solid Dispersions
 
 ## Overview
-This is the repository that accompanies the paper titled 'Material-sparing screening of amorphous solid dispersions using low frequency Raman spectroscopy'. You can read the paper in `dissertation.pdf`
+This is the repository that accompanies the paper titled 'Material-sparing screening of amorphous solid dispersions using low frequency Raman spectroscopy'. You can read the paper in `dissertation.pdf`. This repository is a fork of Sal Garcia's pyphi repository available at https://github.com/salvadorgarciamunoz/pyphi.
 
 ## Installation
 1) Download this repository:
@@ -51,7 +51,7 @@ You can modify the default output folder names by editing `settings.py`
 A folder containing .txt files obtained from the HORIBA LabRAM Odyssey confocal Raman microscope.
 
 #### pcm_asds_pca/pyphi/
-A folder containing files from Sal Garcia's pyphi repository (available at https://github.com/salvadorgarciamunoz/pyphi) which allow us to conduct PCA on the spectral data.
+A folder containing files from Sal Garcia's pyphi repository which allow us to conduct PCA on the spectral data.
 
 #### pcm_asds_pca/analysis/
 A folder containing `pca.py` and `spectra.py` for creating a PCA model and displaying graphs.
