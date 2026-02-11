@@ -19,9 +19,6 @@ dependencies = [
         "xlrd",
 ]
 
-[project.optional-dependencies]
-ramanspy = ["ramanspy"]
-
 authors = [
     {name = "Sal Garcia", email = "sgarciam@ic.ac.uk"}
 ]
@@ -39,6 +36,9 @@ classifiers = [
         "Programming Language :: Python :: 3",
         "Operating System :: OS Independent",
 ]
+
+[project.optional-dependencies]
+ramanspy = ["ramanspy"]
 
 [project.urls]
 Original_repository = "https://github.com/salvadorgarciamunoz/pyphi"
