@@ -270,7 +270,7 @@ def main():
     if CROSS_VAL > 100 or CROSS_VAL < 0:
         sys.exit("CROSS_VAL must be an integer between 0 and 100")
 
-    if NUM_PCS < 0:
+    if NUM_PCS <= 0:
         sys.exit("NUM_PCS must be an integer greater than 0")
 
     with open(f"{PCA_OUTPUT}/pca_terminal_output.txt", "w") as f:
