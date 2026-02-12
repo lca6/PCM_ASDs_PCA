@@ -45,13 +45,10 @@ Original_repository = "https://github.com/salvadorgarciamunoz/pyphi"
 Original_repository_documentation = "https://salvadorgarciamunoz.github.io/pyphi/index.html"
 Repository = "https://github.com/lca6/PCM_ASDs_PCA"
 
-[project.scripts]
-pcm-asds-pca = "pcm_asds_pca.analysis.pca:main"
-pcm-asds-spectra = "pcm_asds_pca.analysis.spectra:main"
-
 [tool.setuptools]
 include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["pcm_asds_pca*"]
+
