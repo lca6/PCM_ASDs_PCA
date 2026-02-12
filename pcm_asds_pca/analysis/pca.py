@@ -55,7 +55,7 @@ def main():
 
     # Check that PCA is set to be conducted
     if CONDUCT_PCA is False:
-        sys.exit("CONDUCT_PCA is set to False in settings.py")
+        sys.exit("CONDUCT_PCA is set to False in pcm_asds_pca/config/settings.py")
 
     # Moves files from pca_output to Bin
     folder = pathlib.Path(f"{PATH_TO_DIR}/{PCA_OUTPUT}")
