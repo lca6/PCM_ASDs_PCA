@@ -9,6 +9,7 @@ This is the repository that accompanies the paper titled 'Material-sparing scree
 2) Clone this repository:
    ```bash
    git clone https://github.com/lca6/PCM_ASDs_PCA
+   cd PCM_ASDs_PCA
    ```
 
 3) Install the conda-only dependency required by `ramanspy`:
@@ -26,21 +27,24 @@ This is the repository that accompanies the paper titled 'Material-sparing scree
    mv sample.env .env
    ```
 
-6) Populate the `PATH_TO_DIR` environment variable
+6) Populate the `PATH_TO_DIR` environment variable with the output from:
+   ```bash
+   pwd
+   ```
 
 ## Workflow
-1) Copy and paste the .txt files to be analysed into `analyse/`
+1) Copy and paste the .txt files to be analysed into `analyse/`. These should be files obtained using the **multiwell** function from the LabSpec 6 Spectroscopy Suite.
 
 2) Configure parameters in `settings.py`
 
 3) To create a PCA model:
    ```bash
-   pcm-asds-pca
+   python -m pcm_asds_pca.analysis.pca
    ```
 
 4) To display desired graphs:
    ```bash
-   pcm-asds-spectra
+   python -m pcm_asds_pca.analysis.spectra
    ```
 
 ## Output
