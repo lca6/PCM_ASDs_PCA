@@ -17,6 +17,7 @@ import time
 from contextlib import redirect_stderr, redirect_stdout
 
 from pcm_asds_pca.config.settings import (
+    APPEARANCE,
     COLS_TO_REMOVE,
     CONDUCT_PCA,
     CROSS_VAL,
@@ -107,7 +108,7 @@ def main():
             continue
         elif sample.plate in PLATES_TO_REMOVE:
             continue
-        elif sample.appearance == "":
+        elif sample.appearance == APPEARANCE:
             continue
 
         # =======================
@@ -303,6 +304,7 @@ def main():
         settings["Plates removed"] = PLATES_TO_REMOVE
         settings["Sample rows removed"] = ROWS_TO_REMOVE
         settings["Sample columns removed"] = COLS_TO_REMOVE
+        settings["Samples removed"] = APPEARANCE
         settings["Wavenumber range"] = WAVENUMBER_RANGE
 
         json.dump(settings, f, indent=2)

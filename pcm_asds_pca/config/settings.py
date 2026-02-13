@@ -22,6 +22,12 @@ ROWS_TO_REMOVE = []
 # Filter samples by columns (e.g. 5)
 COLS_TO_REMOVE = []
 
+# Filter samples by appearance
+# To not filter: ""
+# To remove crystalline samples: "crystalline"
+# To remove amorphous samples: "amorphous"
+APPEARANCE = ""
+
 # Crop spectra: (None, None) defaults to 0 and 2000 cm-1 respectively
 # Otherwise must be integers between 0 and 2000
 WAVENUMBER_RANGE = (None, None)
