@@ -22,6 +22,7 @@ from pcm_asds_pca.config.settings import (
     DISPLAY_SAMPLE_LABELS,
     DISPLAY_SCORE_SCATTER,
     DISPLAY_SPECTRA,
+    filter_pcaobj,
     FIRST_PC,
     PATH_TO_DIR,
     NAME,
@@ -38,8 +39,16 @@ def main():
     # Read pcaobj from .npy file
     pcaobj = np.load(f"{PCA_OUTPUT}/pcaobj_not_viewable.npy", allow_pickle=True).item()
 
+    # Filter pcaobj according to settings.py
+    pcaobj, rows_to_remove = filter_pcaobj(pcaobj)
+
     # Read sample_df from .pkl file
     sample_df = pd.read_pickle(f"{PCA_OUTPUT}/sample_df_not_viewable.pkl")
+
+    labels_to_remove = sample_df.index[rows_to_remove]
+
+    # Filter sample_df to remove the same samples that were removed from pcaobj
+    sample_df.drop(labels_to_remove, inplace=True)
 
     # Read num_pcs from pca_settings.json file
     with open(f"{PCA_OUTPUT}/pca_settings.json") as f:
@@ -155,28 +164,42 @@ def main():
                 filename=filename,
             )
 
-        # ==============================
-        # Display Hotelling's T2 and SPE
-        # ==============================
-        if DISPLAY_DIAGNOSTICS is True:
+            # Wait for plots to load in browser
+            time.sleep(5)
 
-            pp.diagnostics(
-                pcaobj,
-                addtitle=title,
-                filename=filename,
-                score_plot_xydim=[FIRST_PC, SECOND_PC],
-            )
+            # Move .html files to spectra_output/ folder
+            src_dir = pathlib.Path(".")
+            dst_dir = pathlib.Path(f"{SPECTRA_OUTPUT}")
+            dst_dir.mkdir(parents=True, exist_ok=True)
 
-    # Wait for plots to load in browser
-    time.sleep(5)
+            for html_file in src_dir.glob("*.html"):
+                shutil.move(html_file, dst_dir / html_file.name)
 
-    # Move .html files to spectra_output/ folder
-    src_dir = pathlib.Path(".")
-    dst_dir = pathlib.Path(f"{SPECTRA_OUTPUT}")
-    dst_dir.mkdir(parents=True, exist_ok=True)
+    # ==============================
+    # Display Hotelling's T2 and SPE
+    # ==============================
+    if DISPLAY_DIAGNOSTICS is True:
 
-    for html_file in src_dir.glob("*.html"):
-        shutil.move(html_file, dst_dir / html_file.name)
+        title = f"{NAME} with {num_pcs} Principle Components"
+        filename = f"{NAME}_{num_pcs} PCs_PC{FIRST_PC} - PC{SECOND_PC}"
+
+        pp.diagnostics(
+            pcaobj,
+            addtitle=title,
+            filename=filename,
+            score_plot_xydim=[FIRST_PC, SECOND_PC],
+        )
+
+        # Wait for plots to load in browser
+        time.sleep(5)
+
+        # Move .html files to spectra_output/ folder
+        src_dir = pathlib.Path(".")
+        dst_dir = pathlib.Path(f"{SPECTRA_OUTPUT}")
+        dst_dir.mkdir(parents=True, exist_ok=True)
+
+        for html_file in src_dir.glob("*.html"):
+            shutil.move(html_file, dst_dir / html_file.name)
 
 
 # ========================
