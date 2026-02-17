@@ -32,34 +32,6 @@ This is the repository that accompanies the paper titled 'Material-sparing scree
    pwd
    ```
 
-## Workflow
-1) Copy and paste the .txt files to be analysed into `analyse/`. These should be files obtained using the **multiwell** function from the LabSpec 6 Spectroscopy Suite.
-
-2) Configure parameters in `settings.py`
-
-3) To create a PCA model:
-   ```bash
-   python -m pcm_asds_pca.analysis.pca
-   ```
-
-4) To display desired graphs:
-   ```bash
-   python -m pcm_asds_pca.analysis.spectra
-   ```
-
-## Output
-The scripts in this project automatically generate output files in designated folders:
-
-- `pca.py` outputs the PCA model to `pca_output/`
-
-- `spectra.py` outputs graphs to `spectra_output/`
-
-`analyse/`, `pca_output/` and `spectra_output/` contain `.gitkeep` files. These files are placeholders to preserve the empty folder structure in Git. You can safely remove the `.gitkeep` files once you have cloned the repository.
-
-### Customising the output folder names
-
-You can modify the default output folder names by editing `settings.py`
-
 ## Project Structure
 #### data/
 Contains .txt files obtained from the HORIBA LabRAM Odyssey confocal Raman microscope.
@@ -78,3 +50,31 @@ Contains functions and classes utilised by `pca.py` and `spectra.py`
 
 #### pcm_asds_pca/pyphi/
 Contains files from Sal Garcia's pyphi repository which allow us to conduct PCA on the spectral data.
+
+## Output
+The scripts in this project automatically generate output files in designated folders:
+
+`pca.py` outputs the PCA model to `pca_output/`
+
+`spectra.py` outputs graphs to `spectra_output/`
+
+`analyse/`, `pca_output/` and `spectra_output/` contain `.gitkeep` files. These files are placeholders to preserve the empty folder structure in Git. You can safely remove the `.gitkeep` files once you have cloned the repository.
+
+### Customising the output folder names
+
+You can modify the default output folder names by editing `settings.py`
+
+## Workflow
+1) Copy and paste the .txt files to be analysed into `analyse/`. These should be files obtained using the **multiwell** function from the LabSpec 6 Spectroscopy Suite.
+
+2) Configure parameters in `settings.py`
+
+3) To create a PCA model:
+   ```bash
+   python -m pcm_asds_pca.analysis.pca
+   ```
+
+4) To display desired graphs:
+   ```bash
+   python -m pcm_asds_pca.analysis.spectra
+   ```
