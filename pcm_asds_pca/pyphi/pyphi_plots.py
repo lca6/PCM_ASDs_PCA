@@ -1218,7 +1218,7 @@ def score_line(mvmobj,dim,*,CLASSID=False,colorby=False,Xnew=False,add_ci=False,
 
 
 
-def diagnostics(mvmobj,*,Xnew=False,Ynew=False,score_plot_xydim=False,plotwidth=600,ht2_logscale=False,spe_logscale=False, filename=False, addtitle=False):
+def diagnostics(mvmobj,*,Xnew=False,Ynew=False,score_plot_xydim=False,plotwidth=600,ht2_logscale=False,spe_logscale=False, filename="", addtitle=""):
     """Hotelling's T2 and SPE
     
     diagnostics(mvmobj,*,Xnew=False,Ynew=False,score_plot_xydim=False,plotwidth=600,ht2_logscale=False,spe_logscale=False):
@@ -1339,8 +1339,8 @@ def diagnostics(mvmobj,*,Xnew=False,Ynew=False,score_plot_xydim=False,plotwidth=
             ("Obs: ","@ObsID")
             ]
           
-    output_file(f"Hotelling's T2 and SPE_{filename}.html",title="Hotelling's T2 and SPE",mode='inline') 
-    p = figure(tools=TOOLS, tooltips=TOOLTIPS, width=plotwidth, title=f"Hotelling's T2 - {addtitle}")
+    output_file(f"Hotelling's T2 and SPE {filename}.html",title="Hotelling's T2 and SPE",mode='inline') 
+    p = figure(tools=TOOLS, tooltips=TOOLTIPS, width=plotwidth, title=f"Hotelling's T2 {addtitle}")
     #p.circle('x','t2',source=source)
     p.scatter('x','t2',source=source)
     if ht2_logscale:
@@ -1355,7 +1355,7 @@ def diagnostics(mvmobj,*,Xnew=False,Ynew=False,score_plot_xydim=False,plotwidth=
     p.yaxis.axis_label = "HT2"
     p_list=[p]
     
-    p = figure(tools=TOOLS, tooltips=TOOLTIPS, width=plotwidth, title=f'SPE X - {addtitle}')
+    p = figure(tools=TOOLS, tooltips=TOOLTIPS, width=plotwidth, title=f'SPE X {addtitle}')
     #p.circle('x','spex',source=source)
     p.scatter('x','spex',source=source)
     
@@ -1370,7 +1370,7 @@ def diagnostics(mvmobj,*,Xnew=False,Ynew=False,score_plot_xydim=False,plotwidth=
     p.yaxis.axis_label = 'SPE X-Space'
     p_list.append(p)
     
-    p = figure(tools=TOOLS, tooltips=TOOLTIPS, width=plotwidth, title=f'Outlier Map - {addtitle}')
+    p = figure(tools=TOOLS, tooltips=TOOLTIPS, width=plotwidth, title=f'Outlier Map {addtitle}')
     #p.circle('t2','spex',source=source)
     p.scatter('t2','spex',source=source)
     
