@@ -15,21 +15,7 @@ import time
 
 from matplotlib.ticker import MaxNLocator
 
-from pcm_asds_pca.config.settings import (
-    COLORBY,
-    DISPLAY_DIAGNOSTICS,
-    DISPLAY_PCs_R2X,
-    DISPLAY_SAMPLE_LABELS,
-    DISPLAY_SCORE_SCATTER,
-    DISPLAY_SPECTRA,
-    filter_pcaobj,
-    FIRST_PC,
-    PATH_TO_DIR,
-    NAME,
-    PCA_OUTPUT,
-    SECOND_PC,
-    SPECTRA_OUTPUT,
-)
+from pcm_asds_pca.config.settings import *
 
 from pcm_asds_pca.core.sample import Sample
 
@@ -60,29 +46,36 @@ def main():
     if not folder.exists():
         folder.mkdir(parents=True, exist_ok=True)
 
+    # Filter sample_df
+    filtered_sample_df = sample_df[
+        (~sample_df["plate"].isin(PLATES_TO_REMOVE_IN_SPECTRA)) &
+        (~sample_df["row"].isin(ROWS_TO_REMOVE_IN_SPECTRA)) &
+        (~sample_df["column"].isin(COLS_TO_REMOVE_IN_SPECTRA))
+    ]
+
     # Create a list of sample labels
     # The label for each sample is in the format: "well (position) (appearance) (plate X)"
     sample_labels = (
-        sample_df["well"]
+        filtered_sample_df["well"]
         + " ("
-        + sample_df["position"]
+        + filtered_sample_df["position"]
         + ")"
         + " ("
-        + sample_df["appearance"]
+        + filtered_sample_df["appearance"]
         + ")"
         + " (plate "
-        + sample_df["plate"].astype(str)
+        + filtered_sample_df["plate"].astype(str)
         + ")"
     ).tolist()
 
     # Save samples to spectra_samples.txt
-    with open(f"{SPECTRA_OUTPUT}/spectra_samples.txt", "w") as f:
+    with open(f"{SPECTRA_OUTPUT}/{NAME}_spectra_samples.txt", "w") as f:
         for s in sample_labels:
             print(s, file=f)
 
     print()
     print(
-        f'Please see "{SPECTRA_OUTPUT}/spectra_samples.txt" for a list of the samples displayed.'
+        f'Please see "{SPECTRA_OUTPUT}/{NAME}_spectra_samples.txt" for a list of the samples displayed.'
     )
     print()
 
@@ -137,11 +130,11 @@ def main():
 
         # Set title and filename for score scatter and diagnostics plots based on COLORBY, FIRST_PC and SECOND_PC
         if colorby == "none":
-            title = f"{NAME} with {num_pcs} Principle Components"
-            filename = f"{NAME}_{num_pcs} PCs_PC{FIRST_PC} - PC{SECOND_PC}"
+            title = f"{num_pcs} Principle Components (PC{FIRST_PC} - PC{SECOND_PC})"
+            filename = f"{num_pcs} PCs_PC{FIRST_PC} - PC{SECOND_PC}"
         else:
-            title = f"{NAME} coloured by {colorby.capitalize()} with {num_pcs} Principle Components"
-            filename = f"{NAME}_{colorby.capitalize()}_{num_pcs} PCs_PC{FIRST_PC} - PC{SECOND_PC}"
+            title = f"Coloured by {colorby.capitalize()} with {num_pcs} Principle Components (PC{FIRST_PC} - PC{SECOND_PC})"
+            filename = f"{colorby.capitalize()}_{num_pcs} PCs_PC{FIRST_PC} - PC{SECOND_PC}"
 
         # ========================================================
         # Display score scatter plot of FIRST_PC against SECOND_PC
@@ -180,13 +173,8 @@ def main():
     # ==============================
     if DISPLAY_DIAGNOSTICS is True:
 
-        title = f"{NAME} with {num_pcs} Principle Components"
-        filename = f"{NAME}_{num_pcs} PCs_PC{FIRST_PC} - PC{SECOND_PC}"
-
         pp.diagnostics(
             pcaobj,
-            addtitle=title,
-            filename=filename,
             score_plot_xydim=[FIRST_PC, SECOND_PC],
         )
 
@@ -261,10 +249,19 @@ def display_spectra(sample_df, sample_labels, title):
 
     spectra_to_visualise = []
 
+    cropper = rp.preprocessing.misc.Cropper(region=wavenumber_range)
+
     for sample in samples:
 
+        # Filter spectra by plate
+        if sample.plate in PLATES_TO_REMOVE_IN_SPECTRA:
+            continue
+        elif sample.row in ROWS_TO_REMOVE_IN_SPECTRA:
+            continue
+        elif sample.col in COLS_TO_REMOVE_IN_SPECTRA:
+            continue
+
         # Crop spectra
-        cropper = rp.preprocessing.misc.Cropper(region=wavenumber_range)
         spectrum = cropper.apply(sample.spectrum)
 
         # Preprocess the spectrum with the same preprocessing techniques as those applied before PCA
