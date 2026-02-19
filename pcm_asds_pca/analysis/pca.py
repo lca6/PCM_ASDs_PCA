@@ -16,23 +16,7 @@ import time
 
 from contextlib import redirect_stderr, redirect_stdout
 
-from pcm_asds_pca.config.settings import (
-    APPEARANCE,
-    COLS_TO_REMOVE,
-    CONDUCT_PCA,
-    CROSS_VAL,
-    PATH_TO_DIR,
-    NUM_PCS,
-    PCA_OUTPUT,
-    PLATES_TO_REMOVE,
-    ROWS_TO_REMOVE,
-    PREPROCESS_WITH_SAVGOL,
-    PREPROCESS_WITH_SNV,
-    SAVGOL_DERIVATIVE,
-    SAVGOL_POLYNOMIAL,
-    SAVGOL_WINDOW,
-    WAVENUMBER_RANGE,
-)
+from pcm_asds_pca.config.settings import *
 
 from pcm_asds_pca.core.parse import parse
 
@@ -102,13 +86,13 @@ def main():
         # Filter samples to be included in PCA
         # ====================================
 
-        if sample.row in ROWS_TO_REMOVE:
+        if sample.row in ROWS_TO_REMOVE_IN_PCA:
             continue
-        elif sample.col in COLS_TO_REMOVE:
+        elif sample.col in COLS_TO_REMOVE_IN_PCA:
             continue
-        elif sample.plate in PLATES_TO_REMOVE:
+        elif sample.plate in PLATES_TO_REMOVE_IN_PCA:
             continue
-        elif sample.appearance == APPEARANCE:
+        elif sample.appearance == APPEARANCE_TO_REMOVE_IN_PCA:
             continue
 
         # =======================
@@ -301,10 +285,10 @@ def main():
             settings["Savitzky-Golay Window"] = SAVGOL_WINDOW
 
         settings["Standard Normal Variate"] = PREPROCESS_WITH_SNV
-        settings["Plates removed"] = PLATES_TO_REMOVE
-        settings["Sample rows removed"] = ROWS_TO_REMOVE
-        settings["Sample columns removed"] = COLS_TO_REMOVE
-        settings["Samples removed"] = APPEARANCE
+        settings["Plates removed"] = PLATES_TO_REMOVE_IN_PCA
+        settings["Sample rows removed"] = ROWS_TO_REMOVE_IN_PCA
+        settings["Sample columns removed"] = COLS_TO_REMOVE_IN_PCA
+        settings["Samples removed"] = APPEARANCE_TO_REMOVE_IN_PCA
         settings["Wavenumber range"] = WAVENUMBER_RANGE
 
         json.dump(settings, f, indent=2)
