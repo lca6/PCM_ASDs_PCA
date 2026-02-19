@@ -25,19 +25,19 @@ CONDUCT_PCA = False
 NUM_PCS = 0
 
 # Filter samples by plate (e.g. 2)
-PLATES_TO_REMOVE = []
+PLATES_TO_REMOVE_IN_PCA = []
 
 # Filter samples by rows (e.g. "B")
-ROWS_TO_REMOVE = []
+ROWS_TO_REMOVE_IN_PCA = []
 
 # Filter samples by columns (e.g. 5)
-COLS_TO_REMOVE = []
+COLS_TO_REMOVE_IN_PCA = []
 
 # Filter samples by appearance
 # To not filter: ""
 # To remove crystalline samples: "crystalline"
 # To remove amorphous samples: "amorphous"
-APPEARANCE = ""
+APPEARANCE_TO_REMOVE_IN_PCA = ""
 
 # Crop spectra: (None, None) defaults to 0 and 2000 cm-1 respectively
 # Otherwise must be integers between 0 and 2000
@@ -67,21 +67,31 @@ SAVGOL_WINDOW = 0
 # Name of plots and files
 NAME = ""
 
-# Toggle whether to display filter pcaobj
+# Toggle whether to filter pcaobj
 FILTER_PCAOBJ = False
 
 # Toggle whether to display score scatter
 DISPLAY_SCORE_SCATTER = False
+
+# Choose parameter to colour by
+# To not colour: "none"
+COLORBY = "none"
+
+# Filter spectra by plate (e.g. 2)
+# Remember to change NAME accordingly
+PLATES_TO_REMOVE_IN_SPECTRA = []
+
+# Filter spectra by rows (e.g. "B")
+ROWS_TO_REMOVE_IN_SPECTRA = []
+
+# Filter spectra by columns (e.g. 5)
+COLS_TO_REMOVE_IN_SPECTRA = []
 
 # Toggle whether to display spectra
 DISPLAY_SPECTRA = False
 
 # Toggle whether to display sample labels
 DISPLAY_SAMPLE_LABELS = False
-
-# Choose parameter to colour by
-# To not colour: "none"
-COLORBY = "none"
 
 # Principle Components that you would like to plot - FIRST_PC on the x-axis
 FIRST_PC = 0
@@ -109,7 +119,7 @@ def filter_pcaobj(pcaobj, rows_to_remove=None):
 
     for row_index, row in enumerate(pcaobj["T"]):
 
-        # Filter pcaobj
+        # Filter pcaobj by coordinate on score scatter plot
         if row[first_pc_column_index] > 0:
             rows_to_remove.append(row_index)
         elif row[second_pc_column_index] > 0:
