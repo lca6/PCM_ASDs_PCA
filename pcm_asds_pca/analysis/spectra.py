@@ -128,13 +128,13 @@ def main():
         if SECOND_PC == FIRST_PC:
             sys.exit("Second Principle Component cannot equal the first.")
 
-        # Set title and filename for score scatter and diagnostics plots based on COLORBY, FIRST_PC and SECOND_PC
+        # Set title and filename for score scatter plots based on NAME, COLORBY, FIRST_PC and SECOND_PC
         if colorby == "none":
-            title = f"{num_pcs} Principle Components (PC{FIRST_PC} - PC{SECOND_PC})"
-            filename = f"{num_pcs} PCs_PC{FIRST_PC} - PC{SECOND_PC}"
+            title = f"{NAME}"
+            filename = f"{NAME}_{num_pcs} PCs_PC{FIRST_PC} - PC{SECOND_PC}"
         else:
-            title = f"Coloured by {colorby.capitalize()} with {num_pcs} Principle Components (PC{FIRST_PC} - PC{SECOND_PC})"
-            filename = f"{colorby.capitalize()}_{num_pcs} PCs_PC{FIRST_PC} - PC{SECOND_PC}"
+            title = f"{NAME} coloured by {colorby.capitalize()}"
+            filename = f"{NAME}_{colorby.capitalize()}_{num_pcs} PCs_PC{FIRST_PC} - PC{SECOND_PC}"
 
         # ========================================================
         # Display score scatter plot of FIRST_PC against SECOND_PC
@@ -173,10 +173,15 @@ def main():
     # ==============================
     if DISPLAY_DIAGNOSTICS is True:
 
-        pp.diagnostics(
-            pcaobj,
-            score_plot_xydim=[FIRST_PC, SECOND_PC],
-        )
+        try:
+            pp.diagnostics(
+                pcaobj,
+                score_plot_xydim=[FIRST_PC, SECOND_PC],
+            )
+        except np.linalg.LinAlgError:
+            sys.exit(
+                "Error in displaying diagnostics. Check the values of FIRST_PC and SECOND_PC in settings.py"
+            )
 
         # Wait for plots to load in browser
         time.sleep(5)
@@ -195,14 +200,9 @@ def main():
 # ========================
 def display_spectra(sample_df, sample_labels, title):
 
-    title = title.title()
+    title = title.capitalize()
 
     filename = f"raman_spectrum_{title}"
-
-    # Read wavenumber_range from pca_settings.json file
-    with open(f"{PCA_OUTPUT}/pca_settings.json") as f:
-        settings = json.load(f)
-        wavenumber_range = settings["Wavenumber range"]
 
     samples = sample_df.index.tolist()
 
@@ -249,11 +249,50 @@ def display_spectra(sample_df, sample_labels, title):
 
     spectra_to_visualise = []
 
+    # Read Wavenumber range from pca_settings.json file
+    with open(f"{PCA_OUTPUT}/pca_settings.json") as f:
+        settings = json.load(f)
+        wavenumber_range = settings["Wavenumber range"]
+
+    # Adjust wavenumber range for visualisation if necessary to ensure it is the same as or a subset of the wavenumber range used for PCA
+    if wavenumber_range[0] is None:
+        lower_bound_in_pca = MINIMUM_WAVENUMBER
+    else:
+        lower_bound_in_pca = wavenumber_range[0]
+
+    if wavenumber_range[1] is None:
+        upper_bound_in_pca = MAXIMUM_WAVENUMBER
+    else:
+        upper_bound_in_pca = wavenumber_range[1]
+
+    if WAVENUMBER_RANGE_FOR_SPECTRA[0] is None:
+        lower_bound_in_spectra = MINIMUM_WAVENUMBER
+    else:
+        lower_bound_in_spectra = WAVENUMBER_RANGE_FOR_SPECTRA[0]
+    
+    if WAVENUMBER_RANGE_FOR_SPECTRA[1] is None:
+        upper_bound_in_spectra = MAXIMUM_WAVENUMBER
+    else:
+        upper_bound_in_spectra = WAVENUMBER_RANGE_FOR_SPECTRA[1]
+
+    if lower_bound_in_spectra > lower_bound_in_pca:
+        wavenumber_range[0] = lower_bound_in_spectra
+    else:
+        wavenumber_range[0] = lower_bound_in_pca
+
+    if upper_bound_in_spectra < upper_bound_in_pca:
+        wavenumber_range[1] = upper_bound_in_spectra
+    else:
+        wavenumber_range[1] = upper_bound_in_pca
+
+    title += f" ({wavenumber_range[0]}-{wavenumber_range[1]} cm-1)"
+    filename += f"_{wavenumber_range[0]}-{wavenumber_range[1]}cm-1"
+
     cropper = rp.preprocessing.misc.Cropper(region=wavenumber_range)
 
     for sample in samples:
 
-        # Filter spectra by plate
+        # Filter spectra
         if sample.plate in PLATES_TO_REMOVE_IN_SPECTRA:
             continue
         elif sample.row in ROWS_TO_REMOVE_IN_SPECTRA:
