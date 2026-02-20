@@ -28,15 +28,15 @@ from pprint import pprint
 def main():
 
     # Define upper and lower bounds for wavenumber range to be included in PCA
-    if WAVENUMBER_RANGE[0] is None:
-        lower_bound = 0
+    if WAVENUMBER_RANGE_FOR_PCA[0] is None:
+        lower_bound = MINIMUM_WAVENUMBER
     else:
-        lower_bound = WAVENUMBER_RANGE[0]
+        lower_bound = WAVENUMBER_RANGE_FOR_PCA[0]
 
-    if WAVENUMBER_RANGE[1] is None:
-        upper_bound = 2000
+    if WAVENUMBER_RANGE_FOR_PCA[1] is None:
+        upper_bound = MAXIMUM_WAVENUMBER
     else:
-        upper_bound = WAVENUMBER_RANGE[1]
+        upper_bound = WAVENUMBER_RANGE_FOR_PCA[1]
 
     # Check that PCA is set to be conducted
     if CONDUCT_PCA is False:
@@ -132,12 +132,12 @@ def main():
                     shift = float(shift)
                     intensity = float(intensity[:-1])
 
-                    # Crop dataframe according to WAVENUMBER_RANGE
-                    if lower_bound != 0:
+                    # Crop dataframe according to WAVENUMBER_RANGE_FOR_PCA
+                    if lower_bound != MINIMUM_WAVENUMBER:
                         if shift < lower_bound:
                             continue
 
-                    if upper_bound != 2000:
+                    if upper_bound != MAXIMUM_WAVENUMBER:
                         if shift > upper_bound:
                             continue
 
@@ -289,7 +289,7 @@ def main():
         settings["Sample rows removed"] = ROWS_TO_REMOVE_IN_PCA
         settings["Sample columns removed"] = COLS_TO_REMOVE_IN_PCA
         settings["Samples removed"] = APPEARANCE_TO_REMOVE_IN_PCA
-        settings["Wavenumber range"] = WAVENUMBER_RANGE
+        settings["Wavenumber range"] = WAVENUMBER_RANGE_FOR_PCA
 
         json.dump(settings, f, indent=2)
 
