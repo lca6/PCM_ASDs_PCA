@@ -14,6 +14,12 @@ ANALYSIS_FOLDER = "analyse"
 PCA_OUTPUT = "pca_output"
 SPECTRA_OUTPUT = "spectra_output"
 
+# ==============================================================
+# Change according to your multiwell data acquisition parameters
+# ==============================================================
+MINIMUM_WAVENUMBER = 5
+MAXIMUM_WAVENUMBER = 2000
+
 # ================
 # Configure pca.py
 # ================
@@ -39,9 +45,10 @@ COLS_TO_REMOVE_IN_PCA = []
 # To remove amorphous samples: "amorphous"
 APPEARANCE_TO_REMOVE_IN_PCA = ""
 
-# Crop spectra: (None, None) defaults to 0 and 2000 cm-1 respectively
-# Otherwise must be integers between 0 and 2000
-WAVENUMBER_RANGE = (None, None)
+# Crop spectra
+# (None, None) defaults to (MINIMUM_WAVENUMBER, MAXIMUM_WAVENUMBER)
+# Must be integers between MINIMUM_WAVENUMBER and MAXIMUM_WAVENUMBER
+WAVENUMBER_RANGE_FOR_PCA = (None, None)
 
 # % of data to remove per round of PCA
 # Must be an integer between 0 and 100
@@ -61,21 +68,17 @@ SAVGOL_POLYNOMIAL = 0
 SAVGOL_WINDOW = 0
 
 # =====================
-# Configure settings.py
+# Configure spectra.py
 # =====================
 
 # Name of plots and files
 NAME = ""
 
-# Toggle whether to filter pcaobj
-FILTER_PCAOBJ = False
+# Toggle whether to display spectra
+DISPLAY_SPECTRA = False
 
-# Toggle whether to display score scatter
-DISPLAY_SCORE_SCATTER = False
-
-# Choose parameter to colour by
-# To not colour: "none"
-COLORBY = "none"
+# Toggle whether to display sample labels
+DISPLAY_SAMPLE_LABELS = False
 
 # Filter spectra by plate (e.g. 2)
 # Remember to change NAME accordingly
@@ -87,11 +90,20 @@ ROWS_TO_REMOVE_IN_SPECTRA = []
 # Filter spectra by columns (e.g. 5)
 COLS_TO_REMOVE_IN_SPECTRA = []
 
-# Toggle whether to display spectra
-DISPLAY_SPECTRA = False
+# Crop spectra
+# (None, None) defaults to WAVENUMBER_RANGE_FOR_PCA
+# Otherwise must be integers within WAVENUMBER_RANGE_FOR_PCA
+WAVENUMBER_RANGE_FOR_SPECTRA = (None, None)
 
-# Toggle whether to display sample labels
-DISPLAY_SAMPLE_LABELS = False
+# Toggle whether to display score scatter
+DISPLAY_SCORE_SCATTER = False
+
+# Toggle whether to filter pcaobj
+FILTER_PCAOBJ = False
+
+# Choose parameter to colour by
+# To not colour: "none"
+COLORBY = "none"
 
 # Principle Components that you would like to plot - FIRST_PC on the x-axis
 FIRST_PC = 0
@@ -119,17 +131,19 @@ def filter_pcaobj(pcaobj, rows_to_remove=None):
 
     for row_index, row in enumerate(pcaobj["T"]):
 
+        x_coordinate = row[first_pc_column_index]
+        y_coordinate = row[second_pc_column_index]
+
         # Filter pcaobj by coordinate on score scatter plot
-        if row[first_pc_column_index] > 0:
-            rows_to_remove.append(row_index)
-        elif row[second_pc_column_index] > 0:
-            rows_to_remove.append(row_index)
+        ...
 
     pcaobj["T"] = np.delete(pcaobj["T"], rows_to_remove, axis=0)
 
-    pcaobj["obsidX"] = [obsid for i, obsid in enumerate(pcaobj["obsidX"]) if i not in rows_to_remove]
+    pcaobj["T2"] = np.delete(pcaobj["T2"], rows_to_remove, axis=0)
 
-    print(pcaobj)
+    pcaobj["speX"] = np.delete(pcaobj["speX"], rows_to_remove, axis=0)
+
+    pcaobj["obsidX"] = [obsid for i, obsid in enumerate(pcaobj["obsidX"]) if i not in rows_to_remove]
 
     return pcaobj, rows_to_remove
     
