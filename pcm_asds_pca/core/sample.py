@@ -247,6 +247,7 @@ class Sample:
         self.concentration = 0
         self.drug_loading = 0
         self.polymer_loading = 0
+        self.volume = 2
 
         # from rp.load.labspec
         self.spectrum = spectrum
@@ -290,6 +291,8 @@ class Sample:
                 self.polymer_loading = 100 - self.drug_loading
                 if self.well in plate1_crystalline_wells:
                     self.appearance = "crystalline"
+                if self.col in [7, 8, 9, 10, 11, 12]:
+                    self.volume = 4
 
             case 2:
                 self.polymer = plate2["polymer"][self.col]

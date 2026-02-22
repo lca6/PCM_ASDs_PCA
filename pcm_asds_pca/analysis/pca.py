@@ -113,6 +113,7 @@ def main():
                 polymer_loading=sample.polymer_loading,
                 position=sample.position,
                 appearance=sample.appearance,
+                volume=sample.volume,
             )
         )
 
