@@ -16,8 +16,7 @@ def sort_files(files):
         files.remove(f"{ANALYSIS_FOLDER}/glass_reference.txt")
 
     plate_pattern = re.compile(r"plate(\d+)")
-    well_pattern = re.compile(r"_([A-H])(\d+)(?:_[^\.]+)?\.txt$")
-    edge_pattern = re.compile(r"_edge\.txt$")
+    well_pattern = re.compile(r"_([A-H])(\d+)\.txt$")
     multiwell_pattern = re.compile(r"_multiwell\.txt$")
 
     def sort_key(filename):
@@ -25,16 +24,14 @@ def sort_files(files):
 
         # Multiwell file
         if multiwell_pattern.search(filename):
-            return (plate, -1, -1, -1)
+            return (plate, -1, -1)
 
         # Well-level file
         m = well_pattern.search(filename)
-        row = ord(m.group(1))
-        col = int(m.group(2))
+        row = ord(m.group(1)) # A-H
+        col = int(m.group(2)) # 1-12
 
-        position = 1 if edge_pattern.search(filename) else 0
-
-        return (plate, row, col, position)
+        return (plate, row, col)
 
     sorted_files = sorted(files, key=sort_key)
 

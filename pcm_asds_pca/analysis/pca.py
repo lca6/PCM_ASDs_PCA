@@ -110,8 +110,6 @@ def main():
                 drug=sample.drug,
                 drug_loading=sample.drug_loading,
                 polymer=sample.polymer,
-                polymer_loading=sample.polymer_loading,
-                position=sample.position,
                 appearance=sample.appearance,
                 volume=sample.volume,
             )

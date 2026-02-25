@@ -236,7 +236,6 @@ class Sample:
     def __init__(self, filename: str, spectrum):
 
         self.appearance = "amorphous"
-        self.position = "centre"
         self.drug = "PCM"
         self.well = "N/A"
         self.polymer = "N/A"
@@ -246,7 +245,6 @@ class Sample:
         self.plate = 0
         self.concentration = 0
         self.drug_loading = 0
-        self.polymer_loading = 0
         self.volume = 2
 
         # from rp.load.labspec
@@ -279,16 +277,12 @@ class Sample:
                 c = int(c)
                 self.concentration = c
 
-            if part == "edge":
-                self.position = "Edge"
-
         # Assign polymer, drug loading, polymer loading and appearance to each sample
         match self.plate:
 
             case 1:
                 self.polymer = plate1["polymer"][self.col]
                 self.drug_loading = plate1["drug_loading"][self.row]
-                self.polymer_loading = 100 - self.drug_loading
                 if self.well in plate1_crystalline_wells:
                     self.appearance = "crystalline"
                 if self.col in [7, 8, 9, 10, 11, 12]:
@@ -297,14 +291,12 @@ class Sample:
             case 2:
                 self.polymer = plate2["polymer"][self.col]
                 self.drug_loading = plate2["drug_loading"][self.row]
-                self.polymer_loading = 100 - self.drug_loading
                 if self.well in plate2_crystalline_wells:
                     self.appearance = "crystalline"
 
             case 3:
                 self.polymer = plate3["polymer"][self.col]
                 self.drug_loading = plate3["drug_loading"][self.row]
-                self.polymer_loading = 100 - self.drug_loading
                 if self.well in plate3_crystalline_wells:
                     self.appearance = "crystalline"
 
@@ -312,4 +304,4 @@ class Sample:
         if self.well == "Glass":
             return "Glass reference"
         else:
-            return f"Sample {self.well} ({self.position}) on plate #{self.plate} at concentration {self.concentration} mg/mL {self.drug}/{self.polymer} {self.drug_loading}%/{self.polymer_loading}% {self.appearance}"
+            return f"Sample {self.well} on plate #{self.plate} at concentration {self.concentration} mg/mL {self.drug}/{self.polymer} {self.drug_loading}%/{100 - self.drug_loading}% {self.appearance}"
