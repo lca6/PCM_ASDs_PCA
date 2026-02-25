@@ -133,6 +133,9 @@ def main():
             title = f"{NAME} coloured by {colorby.capitalize()}"
             filename = f"{NAME}_{colorby.capitalize()}_{num_pcs} PCs_PC{FIRST_PC} - PC{SECOND_PC}"
 
+        first_pc_variance = round(pcaobj["r2x"][FIRST_PC - 1] * 100, 1)
+        second_pc_variance = round(pcaobj["r2x"][SECOND_PC - 1] * 100, 1)
+
         # ========================================================
         # Display score scatter plot of FIRST_PC against SECOND_PC
         # ========================================================
@@ -140,18 +143,22 @@ def main():
             pp.score_scatter(
                 pcaobj,
                 [FIRST_PC, SECOND_PC],
-                addtitle=title,
+                title=title,
                 filename=filename,
+                first_pc_variance=first_pc_variance,
+                second_pc_variance=second_pc_variance,
             )
 
         else:
             pp.score_scatter(
                 pcaobj,
                 [FIRST_PC, SECOND_PC],
-                addtitle=title,
+                title=title,
                 CLASSID=sample_df,
                 colorby=colorby,
                 filename=filename,
+                first_pc_variance=first_pc_variance,
+                second_pc_variance=second_pc_variance,
             )
 
             # Wait for plots to load in browser
@@ -217,7 +224,7 @@ def display_spectra(sample_df, sample_labels, title):
 
     if preprocess_with_snv is True:
         pipeline.append(rp.preprocessing.PreprocessingStep(standard_normal_variate))
-        title += " + Standard Normal Variate"
+        title += " + SNV"
         filename += "_snv"
 
     if preprocess_with_savgol is True:
@@ -235,12 +242,12 @@ def display_spectra(sample_df, sample_labels, title):
                 deriv=savgol_derivative,
             )
         )
-        title += " + Savitzky-Golay filter"
-        filename += f"_savgol_win{savgol_window}_poly{savgol_polynomial}_deriv{savgol_derivative}"
+        title += f" + SG (Derivative {savgol_derivative}, Polynomial {savgol_polynomial}, Window size {savgol_window})"
+        filename += f"_sg_deriv{savgol_derivative}_poly{savgol_polynomial}_win{savgol_window}"
 
     if pipeline == []:
-        title += " (no preprocessing applied)"
-        filename += "_nopreprocessing"
+        title += " (raw)"
+        filename += "_raw"
 
     preprocessing_pipeline = rp.preprocessing.Pipeline(pipeline)
 
@@ -314,6 +321,7 @@ def display_spectra(sample_df, sample_labels, title):
         plot_type="single",
         title=title,
         ax=ax,
+        ylabel=SPECTRA_Y_AXIS_LABEL,
     )
 
     plt.savefig(f"{SPECTRA_OUTPUT}/{filename}", bbox_inches="tight", dpi=300)

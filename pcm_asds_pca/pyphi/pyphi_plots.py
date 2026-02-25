@@ -755,8 +755,9 @@ def _create_classid_(df,column,*,nbins=5):
 
 def score_scatter(mvm_obj,xydim,*,CLASSID=False,colorby=False,Xnew=False,
                   add_ci=False,add_labels=False,add_legend=True,legend_cols=1, 
-                  addtitle='',plotwidth=600,plotheight=600,
-                  rscores=False,material=False,marker_size=7,nbins=False,include_model=False,filename=False):
+                  title='',plotwidth=600,plotheight=600,
+                  rscores=False,material=False,marker_size=7,nbins=False,include_model=False,
+                  filename=False, first_pc_variance=False, second_pc_variance=False):
     '''Score scatter plot
     
     score_scatter(mvm_obj,xydim,*,CLASSID=False,colorby=False,nbins=False,Xnew=False,
@@ -892,7 +893,7 @@ def score_scatter(mvm_obj,xydim,*,CLASSID=False,colorby=False,Xnew=False,
                 ("Obs: ","@ObsID")
                 ]
         
-        p = figure(tools=TOOLS, tooltips=TOOLTIPS,width=plotwidth,height=plotheight, title='Score Scatter PC'+str(xydim[0])+'/PC'+str(xydim[1])+ ' - '+addtitle)
+        p = figure(tools=TOOLS, tooltips=TOOLTIPS,width=plotwidth,height=plotheight, title=title)
         #p.circle('x', 'y', source=source,size=marker_size)
         p.scatter('x', 'y', source=source,size=marker_size)
         if add_ci:
@@ -910,11 +911,11 @@ def score_scatter(mvm_obj,xydim,*,CLASSID=False,colorby=False,Xnew=False,
             labelsX = LabelSet(x='x', y='y', text='ObsID', level='glyph',x_offset=5, y_offset=5, source=source)
             p.add_layout(labelsX)
         if not(rscores):    
-            p.xaxis.axis_label = 'PC'+str(xydim[0])
-            p.yaxis.axis_label = 'PC'+str(xydim[1])
+            p.xaxis.axis_label = f"Scores on PC{str(xydim[0])} ({first_pc_variance}% variance)"
+            p.yaxis.axis_label = f"Scores on PC{str(xydim[1])} ({second_pc_variance}% variance)"
         else:
-            p.xaxis.axis_label = 'PC'+str(xydim[0])
-            p.yaxis.axis_label = 'PC'+str(xydim[1])
+            p.xaxis.axis_label = f"Scores on PC{str(xydim[0])} ({first_pc_variance}% variance)"
+            p.yaxis.axis_label = f"Scores on PC{str(xydim[1])} ({second_pc_variance}% variance)"
         # Vertical line
         vline = Span(location=0, dimension='height', line_color='black', line_width=2)
         # Horizontal line
@@ -980,7 +981,7 @@ def score_scatter(mvm_obj,xydim,*,CLASSID=False,colorby=False,Xnew=False,
         classid_=list(CLASSID[colorby])
         legend_it = []
         
-        p = figure(tools=TOOLS, tooltips=TOOLTIPS,toolbar_location="above",width=plotwidth,height=plotheight,title='Score Scatter PC'+str(xydim[0])+'/PC'+str(xydim[1])+ ' - '+addtitle)
+        p = figure(tools=TOOLS, tooltips=TOOLTIPS,toolbar_location="above",width=plotwidth,height=plotheight,title=title)
 
         for classid_in_turn in Classes_:                      
             x_aux       = []
@@ -1024,11 +1025,11 @@ def score_scatter(mvm_obj,xydim,*,CLASSID=False,colorby=False,Xnew=False,
             p.line(xd99,yd99p,line_color="red",line_dash='dashed')
             p.line(xd99,yd99n,line_color="red",line_dash='dashed') 
         if not(rscores):    
-            p.xaxis.axis_label = 'PC'+str(xydim[0])
-            p.yaxis.axis_label = 'PC'+str(xydim[1])
+            p.xaxis.axis_label = f"Scores on PC{str(xydim[0])} ({first_pc_variance}% variance)"
+            p.yaxis.axis_label = f"Scores on PC{str(xydim[1])} ({second_pc_variance}% variance)"
         else:
-            p.xaxis.axis_label = 'PC'+str(xydim[0])
-            p.yaxis.axis_label = 'PC'+str(xydim[1])
+            p.xaxis.axis_label = f"Scores on PC{str(xydim[0])} ({first_pc_variance}% variance)"
+            p.yaxis.axis_label = f"Scores on PC{str(xydim[1])} ({second_pc_variance}% variance)"
         # Vertical line
         vline = Span(location=0, dimension='height', line_color='black', line_width=2)
         # Horizontal line
