@@ -47,7 +47,7 @@ def main():
         folder.mkdir(parents=True, exist_ok=True)
 
     # Filter sample_df
-    filtered_sample_df = sample_df[
+    sample_df = sample_df[
         (~sample_df["plate"].isin(PLATES_TO_REMOVE_IN_SPECTRA)) &
         (~sample_df["row"].isin(ROWS_TO_REMOVE_IN_SPECTRA)) &
         (~sample_df["column"].isin(COLS_TO_REMOVE_IN_SPECTRA))
@@ -56,26 +56,23 @@ def main():
     # Create a list of sample labels
     # The label for each sample is in the format: "well (position) (appearance) (plate X)"
     sample_labels = (
-        filtered_sample_df["well"]
-        + " ("
-        + filtered_sample_df["position"]
-        + ")"
-        + " ("
-        + filtered_sample_df["appearance"]
-        + ")"
+        sample_df["well"]
         + " (plate "
-        + filtered_sample_df["plate"].astype(str)
+        + sample_df["plate"].astype(str)
+        + ")"
+        + " ("
+        + sample_df["appearance"]
         + ")"
     ).tolist()
 
     # Save samples to spectra_samples.txt
-    with open(f"{SPECTRA_OUTPUT}/{NAME}_spectra_samples.txt", "w") as f:
+    with open(f"{SPECTRA_OUTPUT}/spectra_samples.txt", "w") as f:
         for s in sample_labels:
             print(s, file=f)
 
     print()
     print(
-        f'Please see "{SPECTRA_OUTPUT}/{NAME}_spectra_samples.txt" for a list of the samples displayed.'
+        f'Please see "{SPECTRA_OUTPUT}/spectra_samples.txt" for a list of the samples displayed.'
     )
     print()
 
@@ -247,8 +244,6 @@ def display_spectra(sample_df, sample_labels, title):
 
     preprocessing_pipeline = rp.preprocessing.Pipeline(pipeline)
 
-    spectra_to_visualise = []
-
     # Read Wavenumber range from pca_settings.json file
     with open(f"{PCA_OUTPUT}/pca_settings.json") as f:
         settings = json.load(f)
@@ -290,6 +285,8 @@ def display_spectra(sample_df, sample_labels, title):
 
     cropper = rp.preprocessing.misc.Cropper(region=wavenumber_range)
 
+    spectra_to_visualise = []
+
     for sample in samples:
 
         # Filter spectra
@@ -308,12 +305,15 @@ def display_spectra(sample_df, sample_labels, title):
 
         spectra_to_visualise.append(preprocessed_spectrum)
 
+    fig, ax = plt.subplots()
+
     # Plot the spectra overlaid on a single axis
     rp.plot.spectra(
         spectra_to_visualise,
         label=sample_labels,
         plot_type="single",
         title=title,
+        ax=ax,
     )
 
     plt.savefig(f"{SPECTRA_OUTPUT}/{filename}", bbox_inches="tight", dpi=300)
