@@ -254,7 +254,9 @@ class Sample:
 
         if file == "glass_reference":
             self.drug = "N/A"
-            self.well = "Glass"
+            self.well = "glass"
+            self.appearance = "glass"
+            self.volume = 0
             return
 
         for part in file.split("_"):
