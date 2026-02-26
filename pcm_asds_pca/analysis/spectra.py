@@ -46,7 +46,7 @@ def main():
     if not folder.exists():
         folder.mkdir(parents=True, exist_ok=True)
 
-    # Filter sample_df
+    # Filter sample_df by PLATES_TO_REMOVE_IN_SPECTRA, ROWS_TO_REMOVE_IN_SPECTRA and COLS_TO_REMOVE_IN_SPECTRA
     sample_df = sample_df[
         (~sample_df["plate"].isin(PLATES_TO_REMOVE_IN_SPECTRA)) &
         (~sample_df["row"].isin(ROWS_TO_REMOVE_IN_SPECTRA)) &
@@ -54,25 +54,22 @@ def main():
     ]
 
     # Create a list of sample labels
-    # The label for each sample is in the format: "well (position) (appearance) (plate X)"
+    # The label for each sample is in the format: "well (concentration mg/mL)"
     sample_labels = (
         sample_df["well"]
-        + " (plate "
-        + sample_df["plate"].astype(str)
-        + ")"
         + " ("
-        + sample_df["appearance"]
-        + ")"
+        + sample_df["concentration"].astype(str)
+        + " mg/mL)"
     ).tolist()
 
     # Save samples to spectra_samples.txt
-    with open(f"{SPECTRA_OUTPUT}/spectra_samples.txt", "w") as f:
+    with open(f"{SPECTRA_OUTPUT}/{NAME}_spectra_samples.txt", "w") as f:
         for s in sample_labels:
             print(s, file=f)
 
     print()
     print(
-        f'Please see "{SPECTRA_OUTPUT}/spectra_samples.txt" for a list of the samples displayed.'
+        f'Please see "{SPECTRA_OUTPUT}/{NAME}_spectra_samples.txt" for a list of the samples displayed.'
     )
     print()
 
@@ -130,7 +127,7 @@ def main():
             title = f"{NAME}"
             filename = f"{NAME}_{num_pcs} PCs_PC{FIRST_PC} - PC{SECOND_PC}"
         else:
-            title = f"{NAME} coloured by {colorby.capitalize()}"
+            title = f"{NAME} coloured by {colorby.replace('_', ' ')}"
             filename = f"{NAME}_{colorby.capitalize()}_{num_pcs} PCs_PC{FIRST_PC} - PC{SECOND_PC}"
 
         first_pc_variance = round(pcaobj["r2x"][FIRST_PC - 1] * 100, 1)
