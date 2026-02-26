@@ -80,6 +80,9 @@ DISPLAY_SPECTRA = False
 # Toggle whether to display sample labels
 DISPLAY_SAMPLE_LABELS = False
 
+# Y-axis label for spectra plot
+SPECTRA_Y_AXIS_LABEL = ""
+
 # Filter spectra by plate (e.g. 2)
 # Remember to change NAME accordingly
 PLATES_TO_REMOVE_IN_SPECTRA = []
@@ -98,7 +101,7 @@ WAVENUMBER_RANGE_FOR_SPECTRA = (None, None)
 # Toggle whether to display score scatter
 DISPLAY_SCORE_SCATTER = False
 
-# Toggle whether to filter pcaobj
+# Toggle whether to filter points displayed on score scatter
 FILTER_PCAOBJ = False
 
 # Choose parameter to colour by
