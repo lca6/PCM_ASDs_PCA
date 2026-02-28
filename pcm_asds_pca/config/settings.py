@@ -27,7 +27,7 @@ MAXIMUM_WAVENUMBER = 2000
 # Toggle whether to conduct PCA
 CONDUCT_PCA = False
 
-# Number of Principle Components
+# Number of Principal Components
 NUM_PCS = 0
 
 # Filter samples by plate (e.g. 2)
@@ -108,10 +108,10 @@ FILTER_PCAOBJ = False
 # To not colour: "none"
 COLORBY = "none"
 
-# Principle Components that you would like to plot - FIRST_PC on the x-axis
+# Principal Components that you would like to plot - FIRST_PC on the x-axis
 FIRST_PC = 0
 
-# Principle Components that you would like to plot - SECOND_PC on the y-axis
+# Principal Components that you would like to plot - SECOND_PC on the y-axis
 SECOND_PC = 0
 
 # Toggle whether to display plot of PCs vs sum(R2X)
@@ -120,6 +120,19 @@ DISPLAY_PCs_R2X = False
 # Toggle whether to display diagnostics
 # Hotelling's T2 and SPE
 DISPLAY_DIAGNOSTICS = False
+
+# Choose which samples to include in score scatter and Raman spectra
+# Must be sample ObsID
+SUBSET_A_LIST = []
+
+SUBSET_B_LIST = []
+
+SUBSET_C_LIST = []
+
+SUBSET_D_LIST = []
+
+# Subset A coloured in red, B in green, C in orange and D in magenta
+HIGHLIGHTING_COLOURS = ["red", "green", "orange", "magenta"]
 
 
 def filter_pcaobj(pcaobj, rows_to_remove=None):

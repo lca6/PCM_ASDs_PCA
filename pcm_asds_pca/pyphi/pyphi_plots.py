@@ -61,6 +61,8 @@ import math
 #import matplotlib.cm as cm
 import matplotlib
 
+from pcm_asds_pca.config.settings import *
+
 def timestr():
     now=datetime.now()
     return now.strftime("%Y%m%d%H%M%S%f")
@@ -757,7 +759,8 @@ def score_scatter(mvm_obj,xydim,*,CLASSID=False,colorby=False,Xnew=False,
                   add_ci=False,add_labels=False,add_legend=True,legend_cols=1, 
                   title='',plotwidth=600,plotheight=600,
                   rscores=False,material=False,marker_size=7,nbins=False,include_model=False,
-                  filename=False, first_pc_variance=False, second_pc_variance=False):
+                  filename=False, first_pc_variance=False, second_pc_variance=False,
+                  subset_A=False, subset_B=False, subset_C=False, subset_D=False):
     '''Score scatter plot
     
     score_scatter(mvm_obj,xydim,*,CLASSID=False,colorby=False,nbins=False,Xnew=False,
@@ -884,8 +887,35 @@ def score_scatter(mvm_obj,xydim,*,CLASSID=False,colorby=False,Xnew=False,
         x_=T_matrix[:,[xydim[0]-1]]
         y_=T_matrix[:,[xydim[1]-1]]
 
-           
-        source = ColumnDataSource(data=dict(x=x_, y=y_,ObsID=ObsID_,ObsNum=ObsNum_))
+        if subset_A is not False:
+            subset_A_indices = set(i - 1 for i in subset_A)
+        
+        if subset_B is not False:
+            subset_B_indices = set(i - 1 for i in subset_B)
+
+        if subset_C is not False:
+            subset_C_indices = set(i - 1 for i in subset_C)
+
+        if subset_D is not False:
+            subset_D_indices = set(i - 1 for i in subset_D)
+
+        colours = [
+            HIGHLIGHTING_COLOURS[0] if i in subset_A_indices
+            else HIGHLIGHTING_COLOURS[1] if i in subset_B_indices
+            else HIGHLIGHTING_COLOURS[2] if i in subset_C_indices
+            else HIGHLIGHTING_COLOURS[3] if i in subset_D_indices
+            else "blue"
+            for i in range(len(ObsID_))
+        ]
+
+        source = ColumnDataSource(data=dict(
+            x=x_,
+            y=y_,
+            ObsID=ObsID_,
+            ObsNum=ObsNum_,
+            color=colours
+        ))
+
         TOOLS = "save,wheel_zoom,box_zoom,pan,reset,box_select,lasso_select"
         TOOLTIPS = [
                 ("Obs #", "@ObsNum"),
@@ -895,7 +925,7 @@ def score_scatter(mvm_obj,xydim,*,CLASSID=False,colorby=False,Xnew=False,
         
         p = figure(tools=TOOLS, tooltips=TOOLTIPS,width=plotwidth,height=plotheight, title=title)
         #p.circle('x', 'y', source=source,size=marker_size)
-        p.scatter('x', 'y', source=source,size=marker_size)
+        p.scatter('x', 'y', source=source,size=marker_size, color="color")
         if add_ci:
             T_aux1=mvmobj['T'][:,[xydim[0]-1]]
             T_aux2=mvmobj['T'][:,[xydim[1]-1]]
@@ -974,14 +1004,28 @@ def score_scatter(mvm_obj,xydim,*,CLASSID=False,colorby=False,Xnew=False,
                 ("Obs: ","@ObsID"),
                 ("Class:","@Class")
                 ]        
-#        if not(isinstance(nbins, bool)):
-#             if colorby in CLASSID.columns.to_list():
-#                 classid_=list(classid_by_var[colorby])
-#        else:
+        #if not(isinstance(nbins, bool)):
+             #if colorby in CLASSID.columns.to_list():
+                 #classid_=list(classid_by_var[colorby])
+        #else:
         classid_=list(CLASSID[colorby])
         legend_it = []
         
         p = figure(tools=TOOLS, tooltips=TOOLTIPS,toolbar_location="above",width=plotwidth,height=plotheight,title=title)
+
+        if subset_A is not False:
+            subset_A_indices = set(i - 1 for i in subset_A)
+        
+        if subset_B is not False:
+            subset_B_indices = set(i - 1 for i in subset_B)
+
+        if subset_C is not False:
+            subset_C_indices = set(i - 1 for i in subset_C)
+
+        if subset_D is not False:
+            subset_D_indices = set(i - 1 for i in subset_D)
+
+        subsets = subset_A_indices | subset_B_indices | subset_C_indices | subset_D_indices
 
         for classid_in_turn in Classes_:                      
             x_aux       = []
@@ -989,20 +1033,29 @@ def score_scatter(mvm_obj,xydim,*,CLASSID=False,colorby=False,Xnew=False,
             obsid_aux   = []
             obsnum_aux  = []
             classid_aux = []
-            
+            border_colours = []
+
             for i in list(range(len(ObsID_))):
-                
+
                 if classid_[i]==classid_in_turn:
                     x_aux.append(x_[i][0])
                     y_aux.append(y_[i][0])
                     obsid_aux.append(ObsID_[i])
                     obsnum_aux.append(ObsNum_[i])
                     classid_aux.append(classid_in_turn)
-            source = ColumnDataSource(data=dict(x=x_aux, y=y_aux,ObsID=obsid_aux,ObsNum=obsnum_aux, Class=classid_aux))        
+
+                    if i in subsets:
+                        border_colour = "black"
+                    else:
+                        border_colour = "transparent"
+                    
+                    border_colours.append(border_colour)
+
+            source = ColumnDataSource(data=dict(x=x_aux, y=y_aux,ObsID=obsid_aux,ObsNum=obsnum_aux, Class=classid_aux, line_color=border_colours))        
             color_=bokeh_palette[Classes_.index(classid_in_turn)]
             if add_legend:
                 #c = p.circle('x','y',source=source,color=color_,size=marker_size)
-                c = p.scatter('x','y',source=source,color=color_,size=marker_size)
+                c = p.scatter('x','y',source=source,color=color_,size=marker_size, line_color="line_color", line_width=2)
                 aux_=classid_in_turn
                 if isinstance(aux_,(float,int)):
                     aux_=str(aux_)
@@ -1010,7 +1063,7 @@ def score_scatter(mvm_obj,xydim,*,CLASSID=False,colorby=False,Xnew=False,
                 legend_it.append((aux_, [c]))
             else:
                 #p.circle('x','y',source=source,color=color_,size=marker_size)
-                p.scatter('x','y',source=source,color=color_,size=marker_size)
+                p.scatter('x','y',source=source,color=color_,size=marker_size, line_color="line_color", line_width=2)
             if add_labels:
                 labelsX = LabelSet(x='x', y='y', text='ObsID', level='glyph',x_offset=5, y_offset=5, source=source)
                 p.add_layout(labelsX)
@@ -1219,7 +1272,7 @@ def score_line(mvmobj,dim,*,CLASSID=False,colorby=False,Xnew=False,add_ci=False,
 
 
 
-def diagnostics(mvmobj,*,Xnew=False,Ynew=False,score_plot_xydim=False,plotwidth=600,ht2_logscale=False,spe_logscale=False, filename="", addtitle=""):
+def diagnostics(mvmobj,*,Xnew=False,Ynew=False,score_plot_xydim=False,plotwidth=600,ht2_logscale=False,spe_logscale=False, addtitle=""):
     """Hotelling's T2 and SPE
     
     diagnostics(mvmobj,*,Xnew=False,Ynew=False,score_plot_xydim=False,plotwidth=600,ht2_logscale=False,spe_logscale=False):
@@ -1340,8 +1393,8 @@ def diagnostics(mvmobj,*,Xnew=False,Ynew=False,score_plot_xydim=False,plotwidth=
             ("Obs: ","@ObsID")
             ]
           
-    output_file(f"Hotelling's T2 and SPE {filename}.html",title="Hotelling's T2 and SPE",mode='inline') 
-    p = figure(tools=TOOLS, tooltips=TOOLTIPS, width=plotwidth, title=f"Hotelling's T2 {addtitle}")
+    output_file(f"Hotelling's T2 and SPE_{addtitle}.html",title=f"Hotelling's T2 and SPE",mode='inline') 
+    p = figure(tools=TOOLS, tooltips=TOOLTIPS, width=plotwidth, title=f"Hotelling's T2 - {addtitle}")
     #p.circle('x','t2',source=source)
     p.scatter('x','t2',source=source)
     if ht2_logscale:
@@ -1356,7 +1409,7 @@ def diagnostics(mvmobj,*,Xnew=False,Ynew=False,score_plot_xydim=False,plotwidth=
     p.yaxis.axis_label = "HT2"
     p_list=[p]
     
-    p = figure(tools=TOOLS, tooltips=TOOLTIPS, width=plotwidth, title=f'SPE X {addtitle}')
+    p = figure(tools=TOOLS, tooltips=TOOLTIPS, width=plotwidth, title=f'SPE X - {addtitle}')
     #p.circle('x','spex',source=source)
     p.scatter('x','spex',source=source)
     
@@ -1371,7 +1424,7 @@ def diagnostics(mvmobj,*,Xnew=False,Ynew=False,score_plot_xydim=False,plotwidth=
     p.yaxis.axis_label = 'SPE X-Space'
     p_list.append(p)
     
-    p = figure(tools=TOOLS, tooltips=TOOLTIPS, width=plotwidth, title=f'Outlier Map {addtitle}')
+    p = figure(tools=TOOLS, tooltips=TOOLTIPS, width=plotwidth, title=f'Outlier Map - {addtitle}')
     #p.circle('t2','spex',source=source)
     p.scatter('t2','spex',source=source)
     
@@ -1391,7 +1444,7 @@ def diagnostics(mvmobj,*,Xnew=False,Ynew=False,score_plot_xydim=False,plotwidth=
     
     
     if 'Q' in mvmobj and not(isinstance(spey_,bool)):
-        p = figure(tools=TOOLS, tooltips=TOOLTIPS, height=400, title=f'SPE Y {addtitle}')
+        p = figure(tools=TOOLS, tooltips=TOOLTIPS, height=400, title=f'SPE Y - {addtitle}')
         #p.circle('x','spey',source=source)
         p.scatter('x','spey',source=source,size=10)
         p.line([0,Obs_num[-1]],[mvmobj['speY_lim95'],mvmobj['speY_lim95']],line_color='gold')
@@ -1400,7 +1453,7 @@ def diagnostics(mvmobj,*,Xnew=False,Ynew=False,score_plot_xydim=False,plotwidth=
         p.yaxis.axis_label = 'SPE Y-Space'
         p_list.append(p)
     if add_score_plot:
-        p = figure(tools=TOOLS, tooltips=TOOLTIPS, width=plotwidth, title=f'Score Scatter {addtitle}')
+        p = figure(tools=TOOLS, tooltips=TOOLTIPS, width=plotwidth, title=f'Score Scatter - {addtitle}')
         #p.circle('tx', 'ty', source=source,size=7)
         p.scatter('tx', 'ty', source=source,size=10)
         
@@ -1644,7 +1697,7 @@ def predvsobs(mvmobj,X,Y,*,CLASSID=False,colorby=False,x_space=False):
 def contributions_plot(mvmobj,X,cont_type,*,Y=False,from_obs=False,to_obs=False,lv_space=False,plotwidth=800,plotheight=600,xgrid=False):
     """Plot contributions to diagnostics
     
-contributions_plot(mvmobj,X,cont_type,*,Y=False,from_obs=False,to_obs=False,lv_space=False,plotwidth=800,plotheight=600,xgrid=False):
+    contributions_plot(mvmobj,X,cont_type,*,Y=False,from_obs=False,to_obs=False,lv_space=False,plotwidth=800,plotheight=600,xgrid=False):
 
     Args:
         mvmobj : A dictionary created by phi.pls or phi.pca    
