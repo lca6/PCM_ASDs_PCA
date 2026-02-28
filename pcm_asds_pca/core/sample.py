@@ -237,9 +237,9 @@ class Sample:
 
         self.appearance = "amorphous"
         self.drug = "PCM"
-        self.well = "N/A"
-        self.polymer = "N/A"
-        self.row = "N/A"
+        self.well = " "
+        self.polymer = " "
+        self.row = " "
 
         self.col = 0
         self.plate = 0
@@ -253,9 +253,9 @@ class Sample:
         file = filename.removeprefix(f"{ANALYSIS_FOLDER}/").removesuffix(".txt")
 
         if file == "glass_reference":
-            self.drug = "N/A"
-            self.well = "glass"
-            self.appearance = "glass"
+            self.appearance = " "
+            self.drug = " "
+            self.well = "Glass"
             self.volume = 0
             return
 
@@ -304,6 +304,6 @@ class Sample:
 
     def __str__(self):
         if self.well == "Glass":
-            return "Glass reference"
+            return "Glass"
         else:
-            return f"Sample {self.well} on plate #{self.plate} at concentration {self.concentration} mg/mL {self.drug}/{self.polymer} {self.drug_loading}%/{100 - self.drug_loading}% {self.appearance}"
+            return f"Sample {self.well} on plate {self.plate} ({self.concentration} mg/mL) {self.drug}/{self.polymer} {self.drug_loading}%/{100 - self.drug_loading}% {self.appearance}"
