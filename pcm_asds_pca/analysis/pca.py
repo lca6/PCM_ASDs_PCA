@@ -201,7 +201,7 @@ def main():
         spectral_df = plates_1_and_2
 
     print(
-        f"Dataframes created with shifts between {lower_bound} and {upper_bound} cm-1"
+        f"Dataframes created with shifts between {lower_bound} and {upper_bound} cm-1."
     )
     print()
 
@@ -274,7 +274,7 @@ def main():
     with open(f"{PCA_OUTPUT}/pca_settings.json", "w") as f:
 
         settings = {}
-        settings["Principle Components"] = NUM_PCS
+        settings["Principal Components"] = NUM_PCS
         settings["Cross_val"] = CROSS_VAL
         settings["Savitzky-Golay"] = PREPROCESS_WITH_SAVGOL
 
@@ -304,7 +304,7 @@ def main():
     np.save(f"{PCA_OUTPUT}/pcaobj_not_viewable.npy", pcaobj)
 
     sys.exit(
-        f"""PCA successfully conducted with {NUM_PCS} Principle Components, removing {CROSS_VAL}% of data per round.\n
+        f"""PCA successfully conducted with {NUM_PCS} Principal Components, removing {CROSS_VAL}% of data per round.\n
     Please see \"{PCA_OUTPUT}/dataframes.txt\" for the dataframes analysed by PCA.\n
     Please see \"{PCA_OUTPUT}/files_analysed.txt\" for a list of the files analysed.\n
     Please see \"{PCA_OUTPUT}/pca_settings.json\" for the settings applied to the dataframes before PCA.\n

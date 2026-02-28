@@ -27,7 +27,7 @@ maintainers = [
     {name = "Luca Morelli", email = "luca.morelli.2022@uni.strath.ac.uk"}
 ]
 
-description = "Principle Component Analysis on Raman spectra of Paracetamol Amorphous Solid Dispersions"
+description = "Principal Component Analysis (PCA) on Raman spectra of Paracetamol (PCM) Amorphous Solid Dispersions (ASDs)"
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE.txt"]

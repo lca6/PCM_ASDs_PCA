@@ -1,7 +1,7 @@
-# Principle Component Analysis on Raman spectra of Paracetamol Amorphous Solid Dispersions
+# Principal Component Analysis (PCA) on Raman spectra of Paracetamol (PCM) Amorphous Solid Dispersions (ASDs)
 
 ## Overview
-This is the repository that accompanies the paper titled 'Material-sparing screening of amorphous solid dispersions using low frequency Raman spectroscopy'. You can read the paper in `dissertation.pdf`. This repository is a fork of Sal Garcia's pyphi repository available at https://github.com/salvadorgarciamunoz/pyphi.
+This is the repository that accompanies the paper titled 'Material-sparing screening of amorphous solid dispersions using automated Raman spectroscopy'. You can read the paper in `dissertation.pdf`. This repository is a fork of Sal Garcia's pyphi repository available at https://github.com/salvadorgarciamunoz/pyphi.
 
 ## Installation
 3) Create and activate a conda environment (download Miniconda at https://www.anaconda.com/docs/getting-started/miniconda/main)
