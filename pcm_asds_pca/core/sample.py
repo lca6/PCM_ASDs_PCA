@@ -6,85 +6,60 @@
 
 from pcm_asds_pca.config.settings import ANALYSIS_FOLDER
 
-plate1 = {
-    "polymer": {
-        1: "PLS",
-        2: "PLS",
-        3: "PLS",
-        4: "AFF",
-        5: "AFF",
-        6: "AFF",
-        7: "PLS",
-        8: "PLS",
-        9: "PLS",
-        10: "AFF",
-        11: "AFF",
-        12: "AFF",
-    },
-    "drug_loading": {
-        "A": 100,
-        "B": 95,
-        "C": 90,
-        "D": 85,
-        "E": 80,
-        "F": 75,
-        "G": 70,
-        "H": 0,
-    },
+drug_loadings = {
+    "A": 100,
+    "B": 95,
+    "C": 90,
+    "D": 85,
+    "E": 80,
+    "F": 75,
+    "G": 70,
+    "H": 0,
 }
 
-plate2 = {
-    "polymer": {
-        1: "PLS",
-        2: "PLS",
-        3: "PLS",
-        4: "AFF",
-        5: "AFF",
-        6: "AFF",
-        7: "HPMCAS",
-        8: "HPMCAS",
-        9: "HPMCAS",
-        10: "SOL",
-        11: "SOL",
-        12: "SOL",
-    },
-    "drug_loading": {
-        "A": 100,
-        "B": 95,
-        "C": 90,
-        "D": 85,
-        "E": 80,
-        "F": 75,
-        "G": 70,
-        "H": 0,
-    },
+plate1_polymers = {
+    1: "PLS",
+    2: "PLS",
+    3: "PLS",
+    4: "AFF",
+    5: "AFF",
+    6: "AFF",
+    7: "PLS",
+    8: "PLS",
+    9: "PLS",
+    10: "AFF",
+    11: "AFF",
+    12: "AFF",
 }
 
-plate3 = {
-    "polymer": {
-        1: "PLS",
-        2: "PLS",
-        3: "PLS",
-        4: "AFF",
-        5: "AFF",
-        6: "AFF",
-        7: "HPMCAS",
-        8: "HPMCAS",
-        9: "HPMCAS",
-        10: "SOL",
-        11: "SOL",
-        12: "SOL",
-    },
-    "drug_loading": {
-        "A": 100,
-        "B": 95,
-        "C": 90,
-        "D": 85,
-        "E": 80,
-        "F": 75,
-        "G": 70,
-        "H": 0,
-    },
+plate2_polymers = {
+    1: "PLS",
+    2: "PLS",
+    3: "PLS",
+    4: "AFF",
+    5: "AFF",
+    6: "AFF",
+    7: "HPMCAS",
+    8: "HPMCAS",
+    9: "HPMCAS",
+    10: "SOL",
+    11: "SOL",
+    12: "SOL",
+}
+
+plate3_polymers = {
+    1: "PLS",
+    2: "PLS",
+    3: "PLS",
+    4: "AFF",
+    5: "AFF",
+    6: "AFF",
+    7: "HPMCAS",
+    8: "HPMCAS",
+    9: "HPMCAS",
+    10: "SOL",
+    11: "SOL",
+    12: "SOL",
 }
 
 
@@ -253,8 +228,10 @@ class Sample:
         file = filename.removeprefix(f"{ANALYSIS_FOLDER}/").removesuffix(".txt")
 
         if file == "glass_reference":
-            self.appearance = " "
-            self.drug = " "
+            self.appearance = "glass"
+            self.drug = "glass"
+            self.polymer = "glass"
+            self.row = "glass"
             self.well = "Glass"
             self.volume = 0
             return
@@ -283,22 +260,22 @@ class Sample:
         match self.plate:
 
             case 1:
-                self.polymer = plate1["polymer"][self.col]
-                self.drug_loading = plate1["drug_loading"][self.row]
+                self.polymer = plate1_polymers[self.col]
+                self.drug_loading = drug_loadings[self.row]
                 if self.well in plate1_crystalline_wells:
                     self.appearance = "crystalline"
                 if self.col in [7, 8, 9, 10, 11, 12]:
                     self.volume = 4
 
             case 2:
-                self.polymer = plate2["polymer"][self.col]
-                self.drug_loading = plate2["drug_loading"][self.row]
+                self.polymer = plate2_polymers[self.col]
+                self.drug_loading = drug_loadings[self.row]
                 if self.well in plate2_crystalline_wells:
                     self.appearance = "crystalline"
 
             case 3:
-                self.polymer = plate3["polymer"][self.col]
-                self.drug_loading = plate3["drug_loading"][self.row]
+                self.polymer = plate3_polymers[self.col]
+                self.drug_loading = drug_loadings[self.row]
                 if self.well in plate3_crystalline_wells:
                     self.appearance = "crystalline"
 
