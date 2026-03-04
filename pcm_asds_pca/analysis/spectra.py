@@ -52,16 +52,13 @@ def main():
 
     # Filter sample_df by PLATES_TO_REMOVE_IN_SPECTRA, ROWS_TO_REMOVE_IN_SPECTRA and COLS_TO_REMOVE_IN_SPECTRA
     sample_df = sample_df[
-        (~sample_df["plate"].isin(PLATES_TO_REMOVE_IN_SPECTRA)) &
-        (~sample_df["row"].isin(ROWS_TO_REMOVE_IN_SPECTRA)) &
-        (~sample_df["column"].isin(COLS_TO_REMOVE_IN_SPECTRA))
+        (~sample_df["plate"].isin(PLATES_TO_REMOVE_IN_SPECTRA))
+        & (~sample_df["row"].isin(ROWS_TO_REMOVE_IN_SPECTRA))
+        & (~sample_df["column"].isin(COLS_TO_REMOVE_IN_SPECTRA))
     ]
 
     sample_df_labels = (
-        sample_df["well"]
-        + " ("
-        + sample_df["concentration"].astype(str)
-        + " mg/mL)"
+        sample_df["well"] + " (" + sample_df["concentration"].astype(str) + " mg/mL)"
     ).tolist()
 
     # ========
@@ -128,16 +125,14 @@ def main():
 
     subset_D = sample_df.iloc[subset_D]
 
-    subset_D_sample_labels = (
-        subset_D["well"]
-    ).tolist()
+    subset_D_sample_labels = (subset_D["well"]).tolist()
 
     # Save samples to spectra_samples.txt
-    with open(f"{SPECTRA_OUTPUT}/{NAME}_spectra_samples.txt", "w") as f:
+    with open(f"{SPECTRA_OUTPUT}/{NAME}_samples.txt", "w") as f:
 
         print("Subset A", file=f)
         print(file=f)
-        
+
         for s in subset_A_sample_labels:
             print(s, file=f)
 
@@ -148,7 +143,7 @@ def main():
 
         for s in subset_B_sample_labels:
             print(s, file=f)
-        
+
         print(file=f)
 
         print("Subset C", file=f)
@@ -156,7 +151,7 @@ def main():
 
         for s in subset_C_sample_labels:
             print(s, file=f)
-        
+
         print(file=f)
 
         print("Subset D", file=f)
@@ -164,7 +159,7 @@ def main():
 
         for s in subset_D_sample_labels:
             print(s, file=f)
-        
+
         print(file=f)
 
         print("All samples", file=f)
@@ -175,7 +170,7 @@ def main():
 
     print()
     print(
-        f'Please see "{SPECTRA_OUTPUT}/{NAME}_spectra_samples.txt" for a list of the samples displayed.'
+        f'Please see "{SPECTRA_OUTPUT}/{NAME}_samples.txt" for a list of the samples displayed.'
     )
     print()
 
@@ -185,7 +180,12 @@ def main():
 
     subsets = [subset_A, subset_B, subset_C, subset_D]
 
-    subset_labels = [subset_A_sample_labels, subset_B_sample_labels, subset_C_sample_labels, subset_D_sample_labels]
+    subset_labels = [
+        subset_A_sample_labels,
+        subset_B_sample_labels,
+        subset_C_sample_labels,
+        subset_D_sample_labels,
+    ]
 
     # ===============================================================================================
     # Display Raman spectra
@@ -197,7 +197,9 @@ def main():
         if all(subset.empty for subset in subsets):
             display_spectra(samples=sample_df, labels=sample_df_labels, title=NAME)
         else:
-            display_spectra_highlighted_by_subset(subsets=subsets, subset_labels=subset_labels, title=NAME)
+            display_spectra_highlighted_by_subset(
+                subsets=subsets, subset_labels=subset_labels, title=NAME
+            )
 
     # ===========================================================================
     # Display a plot of the number of Principal Components (PCs) against sum(R2X)
@@ -363,7 +365,9 @@ def display_spectra(samples, labels, title):
             )
         )
         title += f" + SG (Derivative {savgol_derivative}, Polynomial {savgol_polynomial}, Window size {savgol_window})"
-        filename += f"_sg_deriv{savgol_derivative}_poly{savgol_polynomial}_win{savgol_window}"
+        filename += (
+            f"_sg_deriv{savgol_derivative}_poly{savgol_polynomial}_win{savgol_window}"
+        )
 
     if pipeline == []:
         title += " (raw)"
@@ -391,7 +395,7 @@ def display_spectra(samples, labels, title):
         lower_bound_in_spectra = MINIMUM_WAVENUMBER
     else:
         lower_bound_in_spectra = WAVENUMBER_RANGE_FOR_SPECTRA[0]
-    
+
     if WAVENUMBER_RANGE_FOR_SPECTRA[1] is None:
         upper_bound_in_spectra = MAXIMUM_WAVENUMBER
     else:
@@ -501,7 +505,9 @@ def display_spectra_highlighted_by_subset(subsets, subset_labels, title):
             )
         )
         title += f" + SG (Derivative {savgol_derivative}, Polynomial {savgol_polynomial}, Window size {savgol_window})"
-        filename += f"_sg_deriv{savgol_derivative}_poly{savgol_polynomial}_win{savgol_window}"
+        filename += (
+            f"_sg_deriv{savgol_derivative}_poly{savgol_polynomial}_win{savgol_window}"
+        )
 
     if pipeline == []:
         title += " (raw)"
@@ -529,7 +535,7 @@ def display_spectra_highlighted_by_subset(subsets, subset_labels, title):
         lower_bound_in_spectra = MINIMUM_WAVENUMBER
     else:
         lower_bound_in_spectra = WAVENUMBER_RANGE_FOR_SPECTRA[0]
-    
+
     if WAVENUMBER_RANGE_FOR_SPECTRA[1] is None:
         upper_bound_in_spectra = MAXIMUM_WAVENUMBER
     else:

@@ -159,7 +159,8 @@ def filter_pcaobj(pcaobj, rows_to_remove=None):
 
     pcaobj["speX"] = np.delete(pcaobj["speX"], rows_to_remove, axis=0)
 
-    pcaobj["obsidX"] = [obsid for i, obsid in enumerate(pcaobj["obsidX"]) if i not in rows_to_remove]
+    pcaobj["obsidX"] = [
+        obsid for i, obsid in enumerate(pcaobj["obsidX"]) if i not in rows_to_remove
+    ]
 
     return pcaobj, rows_to_remove
-    
