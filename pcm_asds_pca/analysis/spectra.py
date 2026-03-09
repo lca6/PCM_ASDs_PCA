@@ -450,6 +450,8 @@ def display_spectra(samples, labels, title):
         ylabel=SPECTRA_Y_AXIS_LABEL,
     )
 
+    ax.set_ylim()
+
     plt.savefig(f"{SPECTRA_OUTPUT}/{filename}", bbox_inches="tight", dpi=300)
     plt.show()
 
@@ -679,6 +681,8 @@ def display_spectra_highlighted_by_subset(subsets, subset_labels, title):
         color=HIGHLIGHTING_COLOURS[3],
     )
 
+    ax.set_ylim()
+
     plt.savefig(f"{SPECTRA_OUTPUT}/{filename}", bbox_inches="tight", dpi=300)
     plt.show()
 
@@ -733,8 +737,7 @@ def display_PCs_R2X(num_pcs, pcaobj):
         )
 
     ax.set_xlabel("Principal Components")
-    ax.set_ylabel("Sum(r2x)")
-    ax.set_title("Principal Components vs Sum(r2x)")
+    ax.set_ylabel("Cumulative proportion of variance explained")
 
     # Axis settings
     ax.set_xlim(left=0)
